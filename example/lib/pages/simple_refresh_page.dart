@@ -11,9 +11,10 @@ class SimpleRefreshPage extends StatelessWidget {
         title: Text('BookList'),
       ),
       body: LoadDataWidget<List<Book>>.buildByDataSource(
-          refreshWidgetAdapter: PullToRefreshWidgetAdapter(),
-          dataSource: BookListDataSource(),
-          dataWidgetBuilder: BookListDataWidgetBuilder()),
+        refreshWidgetAdapter: PullToRefreshWidgetAdapter(),
+        dataSource: BookListDataSource(),
+        dataWidgetBuilder: BookListDataWidgetBuilder(),
+      ),
     );
   }
 }

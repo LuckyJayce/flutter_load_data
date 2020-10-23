@@ -15,8 +15,11 @@
 # 导入方式 #
 ## 1.必须导入： ##
 
-	//MVCHelper核心类库
-	load_data: 1.0.0
+暂未发布到pub上
+
+	  load_data:
+	    git:
+	      url: git://github.com/LuckyJayce/flutter_load_data.git
 
 ## 2.可选：   ##
 1. 如果使用[flutter_pulltorefresh](https://github.com/peng8350/flutter_pulltorefresh)作为刷新可以控件下面方式导入, 并使用PullToRefreshWidgetAdapter
@@ -166,9 +169,64 @@
 
 上面的PullToRefreshWidgetAdapter也可以切换EasyRefreshWidgetAdapter()
 
+完整代码：[simple_refresh_page](https://github.com/LuckyJayce/flutter_load_data/blob/master/example/lib/pages/simple_refresh_page.dart)
+
 ## 4.效果图 ##    
 
 ![example](arts/example.gif)
+
+
+
+# 自定义
+
+## 1.自定义加载状态布局
+
+```
+///状态布局widgetBuilder
+abstract class StatusWidgetBuilder {
+  Widget buildUnLoadWidget(BuildContext context, [VoidCallback refreshToken]);
+
+  /// 显示加载中
+  Widget buildLoadingWidget(
+      BuildContext context, int current, int total, Object progressData);
+
+  /// 显示加载失败
+  /// @param error
+  /// @param refreshToken 可以用于widget点击事件重新刷新
+  Widget buildFailWidget(BuildContext context, Object error,
+      [VoidCallback refreshToken]);
+
+  /// 显示空数据布局
+  /// @param refreshToken 可以用于widget点击事件重新刷新
+  Widget buildEmptyWidget(BuildContext context, [VoidCallback refreshToken]);
+
+  /// 有数据的时候，toast提示失败
+  /// @param error
+  /// @param refreshToken 可以用于widget点击事件重新刷新
+  void tipFail(BuildContext context, Object error, [VoidCallback refreshToken]);
+}
+```
+
+Demo：实现StatusWidgetBuilder 参考：lib里面的 DefaultStatusWidgetBuilder，然后将下面statusWidgetBuilder改为自定义的即可
+
+```
+class SimpleRefreshPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('BookList'),
+      ),
+      body: LoadDataWidget<List<Book>>.buildByDataSource(
+        refreshWidgetAdapter: PullToRefreshWidgetAdapter(),
+        dataSource: BookListDataSource(),
+        dataWidgetBuilder: BookListDataWidgetBuilder(),
+        statusWidgetBuilder: DefaultStatusWidgetBuilder(),
+      ),
+    );
+  }
+}
+```
 
 License
 =======
