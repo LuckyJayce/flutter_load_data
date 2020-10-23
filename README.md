@@ -34,7 +34,7 @@
 
 # 使用方式
 ## 1.实现DataSource<DATA> 加载数据  
-    	abstract class DataSource<DATA> {
+    abstract class DataSource<DATA> {
     	
       ///刷新 触发加载刷新的数据，一般用于加载下拉刷新加载第一页数据
       ///cancelHandle 借鉴于dio类库的设计, 外部通过cancelHandle.cancel()取消，
