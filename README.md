@@ -169,6 +169,8 @@
 
 上面的PullToRefreshWidgetAdapter也可以切换EasyRefreshWidgetAdapter()
 
+**通过上面3个简单步骤实现一个带有下拉刷新，加载，失败状态切换处理和显示列表数据的页面**
+
 完整代码：[simple_refresh_page](https://github.com/LuckyJayce/flutter_load_data/blob/master/example/lib/pages/simple_refresh_page.dart)
 
 ## 4.效果图 ##    
