@@ -11,7 +11,7 @@ import 'task.dart';
 import 'task_helper.dart';
 import 'refresh/no_refresh_adapter.dart';
 import 'refresh_widget_adapter.dart';
-import 'status_widget_builder.dart';
+import 'status_widget_delegate.dart';
 
 class LoadDataWidget<DATA> extends StatefulWidget {
   final DataSource<DATA> dataSource;
@@ -207,7 +207,7 @@ class _LoadControllerImp<DATA> {
       RefreshAdapter refreshAdapter,
       StatusWidgetDelegate statusWidgetDelegate}) {
     if (statusWidgetDelegate == null) {
-      statusWidgetDelegate = DefaultStatusWidgetBuilder();
+      statusWidgetDelegate = DefaultStatusWidgetDelegate();
     }
     if (refreshAdapter == null) {
       refreshAdapter = NoRefreshAdapter();

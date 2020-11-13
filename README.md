@@ -25,7 +25,7 @@
 1. 如果使用[flutter_pulltorefresh](https://github.com/peng8350/flutter_pulltorefresh)作为刷新可以控件下面方式导入, 并使用PullToRefreshWidgetAdapter
 
     	//上面链接查看具体版本
-    	pull_to_refresh: x.x.x
+        	pull_to_refresh: x.x.x
 
 2. 如果使用[flutter_easyrefresh](https://github.com/xuelongqy/flutter_easyrefresh)作为刷新可以控件下面方式导入，并使用EasyRefreshWidgetAdapter
 
@@ -67,7 +67,7 @@
 	  }
 	}
 
-## 2.实现 DataWidgetBuilder显示加载成功的数据	
+## 2.实现 DataWidgetDelegate显示加载成功的数据	
 **Demo 例如：显示书籍列表数据**
 
 	class BookListDataWidgetBuilder implements DataWidgetBuilder<List<Book>> {
@@ -144,7 +144,7 @@
 
 ```
 ///状态布局widgetBuilder
-abstract class StatusWidgetBuilder {
+abstract class StatusWidgetDelegate {
   Widget buildUnLoadWidget(BuildContext context, [VoidCallback refreshToken]);
 
   /// 显示加载中
@@ -168,7 +168,7 @@ abstract class StatusWidgetBuilder {
 }
 ```
 
-Demo：实现StatusWidgetBuilder 参考：lib里面的 DefaultStatusWidgetBuilder，然后将下面statusWidgetBuilder改为自定义的即可
+Demo：实现StatusWidgetDelegate 参考：lib里面的 DefaultStatusWidgetDelegate，然后将下面statusWidgetDelegate改为自定义的即可
 
 ```
 class SimpleRefreshPage extends StatelessWidget {
@@ -181,8 +181,8 @@ class SimpleRefreshPage extends StatelessWidget {
       body: LoadDataWidget<List<Book>>.buildByDataSource(
         refreshWidgetAdapter: PullToRefreshWidgetAdapter(),
         dataSource: BookListDataSource(),
-        dataWidgetBuilder: BookListDataWidgetBuilder(),
-        statusWidgetBuilder: DefaultStatusWidgetBuilder(),
+        dataWidgetBuilder: BookListDataWidgetDelegate(),
+        statusWidgetBuilder: DefaultStatusWidgetDelegate(),
       ),
     );
   }
