@@ -10,7 +10,7 @@ import '../load_data_widget.dart';
 import '../refresh_widget_adapter.dart';
 
 //适配 https://github.com/peng8350/flutter_pulltorefresh 刷新控件
-class PullToRefreshWidgetAdapter implements RefreshWidgetAdapter {
+class PullToRefreshWidgetAdapter implements RefreshAdapter {
   VoidCallback onRefresh;
   VoidCallback onLoadMore;
   RefreshController _controller = RefreshController(initialRefresh: false);

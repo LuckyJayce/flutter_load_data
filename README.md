@@ -37,22 +37,6 @@
 
 # 使用方式
 ## 1.实现DataSource<DATA> 加载数据  
-    abstract class DataSource<DATA> {
-    	
-      ///刷新 触发加载刷新的数据，一般用于加载下拉刷新加载第一页数据
-      ///cancelHandle 借鉴于dio类库的设计, 外部通过cancelHandle.cancel()取消，
-      ///里面则可以通过cancelHandle.isCanceled()判断，或者通过cancelHandle.interruptedWhenCanceled()当被取消是抛出取消异常终止方法执行
-      ///progressCallback，可能为空使用前判空，用于通知外部进度
-      ///Future<DATA> 返回数据的Future
-      Future<DATA> refresh(CancelHandle cancelHandle, [ProgressCallback progressCallback]);
-    
-      ///加载更多 触发加载刷新的数据，一般用于列表加载下一页数据
-      Future<DATA> loadMore(CancelHandle cancelHandle, [ProgressCallback progressCallback]);
-    
-      ///是否有更多数据，是否有下一页数据
-      bool hasMore();
-    }
-
 **Demo 例如：分页加载书籍列表数据**
 
 	///获取列表数据
@@ -84,23 +68,6 @@
 	}
 
 ## 2.实现 DataWidgetBuilder显示加载成功的数据	
-	///数据加载成功显示的WidgetBuilder
-	abstract class DataWidgetBuilder<DATA> {
-	  ///获取数据成功后 通过这个方法更新数据
-	  ///data DataSource或者task方法的数据，
-	  ///refresh 是否是通过DataSource refresh方法返回的，false 表示通过loadMore返回的数据
-	  void notifyDataChange(DATA data, bool refresh);
-	
-	  ///创建显示数据的Widget
-	  Widget build(BuildContext context);
-	
-	  ///是否为空，LoadDataWidget 获取数据成功后，通过这个判断通过StatusWidgetBuilder的empty还是显示DataWidgetBuilder的数据Widget
-	  bool isEmpty();
-	
-	  ///提供外部最终的data
-	  DATA getData();
-	}
-
 **Demo 例如：显示书籍列表数据**
 
 	class BookListDataWidgetBuilder implements DataWidgetBuilder<List<Book>> {
@@ -141,16 +108,8 @@
 	}
 
 ## 3.界面配置LoadDataWidget显示 ##    
-	  LoadDataWidget.buildByDataSource({
-	    @required this.dataSource, //加载数据的dataSource
-	    @required this.dataWidgetBuilder, //加载成功数据的widgetBuilder
-	    this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
-	    this.statusWidgetBuilder, //根据加载创建unload,loading,fail,empty等布局，如果不传默认使用DefaultStatusWidgetBuilder()
-	    this.firstNeedRefresh = true, //当布局加载的时候是否自动调用刷新加载数据
-	    this.refreshWidgetAdapter, //刷新控件适配器，如果不传默认不带有刷新功能
-	  });
 
-**Demo 例如:**
+**demo**
 
 	class BookListPage extends StatelessWidget {
 	  @override
@@ -229,28 +188,3 @@ class SimpleRefreshPage extends StatelessWidget {
   }
 }
 ```
-
-License
-=======
-
-    MIT License
-    
-    Copyright (c) 2020 Jayce
-    
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-    
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-    
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.

@@ -8,7 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'load_data_widget.dart';
 
 ///刷新控件适配器
-abstract class RefreshWidgetAdapter {
+abstract class RefreshAdapter {
   Widget wrapChild(BuildContext context, WidgetStatus status,
       Widget statusWidget, Widget contentWidget);
 

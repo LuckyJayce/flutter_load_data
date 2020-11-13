@@ -10,7 +10,7 @@ import '../load_data_widget.dart';
 import '../refresh_widget_adapter.dart';
 
 //适配 https://github.com/xuelongqy/flutter_easyrefresh 刷新控件
-class EasyRefreshWidgetAdapter implements RefreshWidgetAdapter {
+class EasyRefreshWidgetAdapter implements RefreshAdapter {
   VoidCallback onRefresh;
   VoidCallback onLoadMore;
   EasyRefreshController _controller = EasyRefreshController();

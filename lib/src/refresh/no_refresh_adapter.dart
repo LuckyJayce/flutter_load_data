@@ -8,7 +8,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import '../load_data_widget.dart';
 import '../refresh_widget_adapter.dart';
 
-class NoRefreshAdapter extends RefreshWidgetAdapter {
+class NoRefreshAdapter extends RefreshAdapter {
   @override
   bool get enableLoadMore => false;
 

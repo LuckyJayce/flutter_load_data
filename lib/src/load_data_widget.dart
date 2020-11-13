@@ -13,39 +13,39 @@ import 'refresh/no_refresh_adapter.dart';
 import 'refresh_widget_adapter.dart';
 import 'status_widget_builder.dart';
 
-class LoadDataWidget<DATA> extends StatefulWidget {
+class DataLoader<DATA> extends StatefulWidget {
   final DataSource<DATA> dataSource;
-  final DataWidgetBuilder<DATA> dataWidgetBuilder;
-  final RefreshWidgetAdapter refreshWidgetAdapter;
+  final RefreshAdapter refreshAdapter;
+  final DataWidgetDelegate<DATA> dataWidgetDelegate;
+  final StatusWidgetDelegate statusWidgetDelegate;
   final LoadController<DATA> controller;
   final bool firstNeedRefresh;
-  final StatusWidgetBuilder statusWidgetBuilder;
 
   @override
-  LoadDataWidgetState<DATA> createState() {
-    return LoadDataWidgetState<DATA>();
+  DataLoaderState<DATA> createState() {
+    return DataLoaderState<DATA>();
   }
 
-  LoadDataWidget.buildByDataSource({
+  DataLoader.buildByDataSource({
     @required this.dataSource, //加载数据的dataSource
-    @required this.dataWidgetBuilder, //加载成功数据的widgetBuilder
+    @required this.dataWidgetDelegate, //加载成功数据的widgetBuilder
     this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
-    this.statusWidgetBuilder, //根据加载创建unload,loading,fail,empty等布局，如果不传默认使用DefaultStatusWidgetBuilder
+    this.statusWidgetDelegate, //根据加载创建unload,loading,fail,empty等布局，如果不传默认使用DefaultStatusWidgetBuilder
     this.firstNeedRefresh = true, //当布局加载的时候是否自动调用刷新加载数据
-    this.refreshWidgetAdapter, //刷新控件适配器，如果不传默认不带有刷新功能
+    this.refreshAdapter, //刷新控件适配器，如果不传默认不带有刷新功能
   });
 
-  LoadDataWidget.buildByTask({
+  DataLoader.buildByTask({
     @required Task<DATA> task, //加载数据的task，相比于dataSource只有刷新没有加载更多的功能
-    @required this.dataWidgetBuilder, //加载成功数据的widgetBuilder
+    @required this.dataWidgetDelegate, //加载成功数据的widgetBuilder
     this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
-    this.statusWidgetBuilder, //根据加载创建unload,loading,fail,empty等布局，如果不传默认使用DefaultStatusWidgetBuilder
+    this.statusWidgetDelegate, //根据加载创建unload,loading,fail,empty等布局，如果不传默认使用DefaultStatusWidgetBuilder
     this.firstNeedRefresh = true, //当布局加载的时候是否自动调用刷新加载数据
-    this.refreshWidgetAdapter, //刷新控件适配器，如果不传默认不带有刷新功能
+    this.refreshAdapter, //刷新控件适配器，如果不传默认不带有刷新功能
   }) : this.dataSource = DataSource.buildByTask<DATA>(task);
 }
 
-class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
+class DataLoaderState<DATA> extends State<DataLoader<DATA>> {
   _LoadControllerImp<DATA> _loadControllerImp = _LoadControllerImp<DATA>();
 
   @override
@@ -54,9 +54,9 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     _loadControllerImp.set(
         context: context,
         dataSource: widget.dataSource,
-        statusWidgetBuilder: widget.statusWidgetBuilder,
-        dataWidgetBuilder: widget.dataWidgetBuilder,
-        refreshWidgetAdapter: widget.refreshWidgetAdapter);
+        statusWidgetDelegate: widget.statusWidgetDelegate,
+        dataWidgetDelegate: widget.dataWidgetDelegate,
+        refreshAdapter: widget.refreshAdapter);
     if (widget.controller != null) {
       widget.controller._setControllerImp(_loadControllerImp);
     }
@@ -76,14 +76,14 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   }
 
   @override
-  void didUpdateWidget(covariant LoadDataWidget<DATA> oldWidget) {
+  void didUpdateWidget(covariant DataLoader<DATA> oldWidget) {
     super.didUpdateWidget(oldWidget);
     _loadControllerImp.set(
         context: context,
         dataSource: widget.dataSource,
-        statusWidgetBuilder: widget.statusWidgetBuilder,
-        dataWidgetBuilder: widget.dataWidgetBuilder,
-        refreshWidgetAdapter: widget.refreshWidgetAdapter);
+        statusWidgetDelegate: widget.statusWidgetDelegate,
+        dataWidgetDelegate: widget.dataWidgetDelegate,
+        refreshAdapter: widget.refreshAdapter);
     if (widget.controller != null) {
       widget.controller._setControllerImp(_loadControllerImp);
     }
@@ -184,13 +184,13 @@ class LoadController<DATA> {
 
 class _LoadControllerImp<DATA> {
   DataSource<DATA> dataSource;
-  DataWidgetBuilder<DATA> dataWidgetBuilder;
-  StatusWidgetBuilder statusWidgetBuilder;
+  DataWidgetDelegate<DATA> dataWidgetDelegate;
+  StatusWidgetDelegate statusWidgetDelegate;
   Widget contentWidget;
   Widget statusWidget;
   Widget refreshWidget;
   WidgetBuilder widgetBuilder;
-  RefreshWidgetAdapter refreshWidgetAdapter;
+  RefreshAdapter refreshWidgetAdapter;
   BuildContext context;
 
   CallbackList<DATA> refreshCallbackList = CallbackList<DATA>();
@@ -203,22 +203,22 @@ class _LoadControllerImp<DATA> {
   void set(
       {BuildContext context,
       @required DataSource<DATA> dataSource,
-      @required DataWidgetBuilder<DATA> dataWidgetBuilder,
-      RefreshWidgetAdapter refreshWidgetAdapter,
-      StatusWidgetBuilder statusWidgetBuilder}) {
-    if (statusWidgetBuilder == null) {
-      statusWidgetBuilder = DefaultStatusWidgetBuilder();
+      @required DataWidgetDelegate<DATA> dataWidgetDelegate,
+      RefreshAdapter refreshAdapter,
+      StatusWidgetDelegate statusWidgetDelegate}) {
+    if (statusWidgetDelegate == null) {
+      statusWidgetDelegate = DefaultStatusWidgetBuilder();
     }
-    if (refreshWidgetAdapter == null) {
-      refreshWidgetAdapter = NoRefreshAdapter();
+    if (refreshAdapter == null) {
+      refreshAdapter = NoRefreshAdapter();
     }
     this.dataSource = dataSource;
-    this.dataWidgetBuilder = dataWidgetBuilder;
-    this.refreshWidgetAdapter = refreshWidgetAdapter;
-    this.statusWidgetBuilder = statusWidgetBuilder;
+    this.dataWidgetDelegate = dataWidgetDelegate;
+    this.refreshWidgetAdapter = refreshAdapter;
+    this.statusWidgetDelegate = statusWidgetDelegate;
 
-    refreshWidgetAdapter.setOnRefreshListener(_refresh);
-    refreshWidgetAdapter.setOnLoadMoreListener(_loadMore);
+    refreshAdapter.setOnRefreshListener(_refresh);
+    refreshAdapter.setOnLoadMoreListener(_loadMore);
   }
 
   Widget getWidget() {
@@ -240,7 +240,7 @@ class _LoadControllerImp<DATA> {
       case RefreshingType.auto:
         if (refreshWidgetAdapter != null &&
             refreshWidgetAdapter.enableRefresh) {
-          if (dataWidgetBuilder.isEmpty()) {
+          if (dataWidgetDelegate.isEmpty()) {
             _refresh(showLoadingWidget: true);
           } else {
             refreshWidgetAdapter.requestRefresh();
@@ -264,7 +264,7 @@ class _LoadControllerImp<DATA> {
         _loadMore(showLoadingWidget: true);
         break;
       case RefreshingType.auto:
-        if (dataWidgetBuilder.isEmpty()) {
+        if (dataWidgetDelegate.isEmpty()) {
           _loadMore(showLoadingWidget: true);
         } else {
           refreshWidgetAdapter.requestLoadMore();
@@ -294,7 +294,7 @@ class _LoadControllerImp<DATA> {
       switch (code) {
         case ResultCode.success:
           //通知更新数据
-          dataWidgetBuilder.notifyDataChange(data, true);
+          dataWidgetDelegate.notifyDataChange(data, true);
           buildSuccessWidget(true);
           break;
         case ResultCode.fail:
@@ -345,7 +345,7 @@ class _LoadControllerImp<DATA> {
       switch (code) {
         case ResultCode.success:
           //通知更新数据
-          dataWidgetBuilder.notifyDataChange(data, false);
+          dataWidgetDelegate.notifyDataChange(data, false);
           buildSuccessWidget(false);
           break;
         case ResultCode.fail:
@@ -377,27 +377,27 @@ class _LoadControllerImp<DATA> {
   }
 
   bool isUnload() {
-    return dataWidgetBuilder.getData() == null;
+    return dataWidgetDelegate.getData() == null;
   }
 
   void buildInit() {
-    if (dataWidgetBuilder.getData() == null) {
+    if (dataWidgetDelegate.getData() == null) {
       refreshWidget = refreshWrap(WidgetStatus.unload,
-          statusWidgetBuilder.buildUnLoadWidget(context, refresh), null);
+          statusWidgetDelegate.buildUnLoadWidget(context, refresh), null);
     } else {
       refreshWidget = refreshWrap(
-          WidgetStatus.normal, null, dataWidgetBuilder.build(context));
+          WidgetStatus.normal, null, dataWidgetDelegate.build(context));
     }
   }
 
   void buildErrorWidget(bool isRefresh, Object error) {
-    if (dataWidgetBuilder.isEmpty()) {
+    if (dataWidgetDelegate.isEmpty()) {
       refreshWidget = refreshWrap(
           WidgetStatus.fail,
-          statusWidgetBuilder.buildFailWidget(context, error, refresh),
+          statusWidgetDelegate.buildFailWidget(context, error, refresh),
           contentWidget);
     } else {
-      statusWidgetBuilder.tipFail(context, error, refresh);
+      statusWidgetDelegate.tipFail(context, error, refresh);
     }
   }
 
@@ -405,33 +405,33 @@ class _LoadControllerImp<DATA> {
     if (isUnload()) {
       refreshWidget = refreshWrap(
           WidgetStatus.unload,
-          statusWidgetBuilder.buildUnLoadWidget(context, refresh),
+          statusWidgetDelegate.buildUnLoadWidget(context, refresh),
           contentWidget);
-    } else if (dataWidgetBuilder.isEmpty()) {
+    } else if (dataWidgetDelegate.isEmpty()) {
       refreshWidget = refreshWrap(
           WidgetStatus.fail,
-          statusWidgetBuilder.buildFailWidget(context, null, refresh),
+          statusWidgetDelegate.buildFailWidget(context, null, refresh),
           contentWidget);
     } else {
       if (contentWidget != null) {
         refreshWidget = refreshWrap(WidgetStatus.normal, null, contentWidget);
       } else {
         refreshWidget = refreshWrap(
-            WidgetStatus.normal, null, dataWidgetBuilder.build(context));
+            WidgetStatus.normal, null, dataWidgetDelegate.build(context));
       }
     }
   }
 
   void buildSuccessWidget(bool isRefresh) {
-    if (!dataWidgetBuilder.isEmpty()) {
+    if (!dataWidgetDelegate.isEmpty()) {
       //数据不为空
       refreshWidget = refreshWrap(
-          WidgetStatus.normal, null, dataWidgetBuilder.build(context));
+          WidgetStatus.normal, null, dataWidgetDelegate.build(context));
     } else {
       //如果数据为空，显示空数据--------------
       refreshWidget = refreshWrap(
           WidgetStatus.empty,
-          statusWidgetBuilder.buildEmptyWidget(context, refresh),
+          statusWidgetDelegate.buildEmptyWidget(context, refresh),
           contentWidget);
     }
   }
@@ -440,17 +440,17 @@ class _LoadControllerImp<DATA> {
     if (showLoadingWidget) {
       refreshWidget = refreshWrap(
           WidgetStatus.loading,
-          statusWidgetBuilder.buildLoadingWidget(context, null, null, null),
+          statusWidgetDelegate.buildLoadingWidget(context, null, null, null),
           contentWidget);
     } else {
       //数据不为空,但是Widget为空
       if (statusWidget != null) {
         refreshWidget = refreshWrap(WidgetStatus.loading, statusWidget, null);
       } else {
-        if (dataWidgetBuilder.getData() == null) {
+        if (dataWidgetDelegate.getData() == null) {
           refreshWidget = refreshWrap(
               WidgetStatus.unload,
-              statusWidgetBuilder.buildUnLoadWidget(context, refresh),
+              statusWidgetDelegate.buildUnLoadWidget(context, refresh),
               contentWidget);
         } else {
           refreshWidget = refreshWrap(WidgetStatus.normal, null, contentWidget);
@@ -464,7 +464,7 @@ class _LoadControllerImp<DATA> {
     if (showLoadingWidget) {
       refreshWidget = refreshWrap(
           WidgetStatus.loading,
-          statusWidgetBuilder.buildLoadingWidget(
+          statusWidgetDelegate.buildLoadingWidget(
               context, current, total, progressData),
           contentWidget);
     }

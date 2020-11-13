@@ -1,4 +1,4 @@
-library load_data;
+library flutter_data_loader;
 
 export 'src/data_source.dart';
 export 'src/data_widget_builder.dart';

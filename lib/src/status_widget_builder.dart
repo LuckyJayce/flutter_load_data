@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 ///状态布局widgetBuilder
-abstract class StatusWidgetBuilder {
+abstract class StatusWidgetDelegate {
   Widget buildUnLoadWidget(BuildContext context, [VoidCallback refreshToken]);
 
   /// 显示加载中
@@ -30,7 +30,7 @@ abstract class StatusWidgetBuilder {
   void tipFail(BuildContext context, Object error, [VoidCallback refreshToken]);
 }
 
-class DefaultStatusWidgetBuilder implements StatusWidgetBuilder {
+class DefaultStatusWidgetBuilder implements StatusWidgetDelegate {
   @override
   Widget buildUnLoadWidget(BuildContext context, [VoidCallback refreshToken]) {
     return Container(
