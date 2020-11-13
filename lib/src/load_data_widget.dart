@@ -6,14 +6,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'data_source.dart';
-import 'data_widget_builder.dart';
+import 'data_widget_delegate.dart';
 import 'task.dart';
 import 'task_helper.dart';
 import 'refresh/no_refresh_adapter.dart';
 import 'refresh_widget_adapter.dart';
 import 'status_widget_builder.dart';
 
-class DataLoader<DATA> extends StatefulWidget {
+class LoadDataWidget<DATA> extends StatefulWidget {
   final DataSource<DATA> dataSource;
   final RefreshAdapter refreshAdapter;
   final DataWidgetDelegate<DATA> dataWidgetDelegate;
@@ -22,11 +22,11 @@ class DataLoader<DATA> extends StatefulWidget {
   final bool firstNeedRefresh;
 
   @override
-  DataLoaderState<DATA> createState() {
-    return DataLoaderState<DATA>();
+  LoadDataWidgetState<DATA> createState() {
+    return LoadDataWidgetState<DATA>();
   }
 
-  DataLoader.buildByDataSource({
+  LoadDataWidget.buildByDataSource({
     @required this.dataSource, //加载数据的dataSource
     @required this.dataWidgetDelegate, //加载成功数据的widgetBuilder
     this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
@@ -35,7 +35,7 @@ class DataLoader<DATA> extends StatefulWidget {
     this.refreshAdapter, //刷新控件适配器，如果不传默认不带有刷新功能
   });
 
-  DataLoader.buildByTask({
+  LoadDataWidget.buildByTask({
     @required Task<DATA> task, //加载数据的task，相比于dataSource只有刷新没有加载更多的功能
     @required this.dataWidgetDelegate, //加载成功数据的widgetBuilder
     this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
@@ -45,7 +45,7 @@ class DataLoader<DATA> extends StatefulWidget {
   }) : this.dataSource = DataSource.buildByTask<DATA>(task);
 }
 
-class DataLoaderState<DATA> extends State<DataLoader<DATA>> {
+class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   _LoadControllerImp<DATA> _loadControllerImp = _LoadControllerImp<DATA>();
 
   @override
@@ -76,7 +76,7 @@ class DataLoaderState<DATA> extends State<DataLoader<DATA>> {
   }
 
   @override
-  void didUpdateWidget(covariant DataLoader<DATA> oldWidget) {
+  void didUpdateWidget(covariant LoadDataWidget<DATA> oldWidget) {
     super.didUpdateWidget(oldWidget);
     _loadControllerImp.set(
         context: context,

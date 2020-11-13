@@ -23,12 +23,12 @@ abstract class DataWidgetDelegate<DATA> {
 
   static DataWidgetDelegate<DATA> simple<DATA>(
       Widget Function(BuildContext context, DATA data) builder) {
-    return SimpleDataWidgetBuilder.simple<DATA>(builder);
+    return SimpleDataWidgetDelegate.simple<DATA>(builder);
   }
 }
 
 ///只有刷新没有加载更多的DataWidgetBuilder
-abstract class SimpleDataWidgetBuilder<DATA> extends DataWidgetDelegate<DATA> {
+abstract class SimpleDataWidgetDelegate<DATA> extends DataWidgetDelegate<DATA> {
   DATA data;
 
   @override
@@ -46,16 +46,16 @@ abstract class SimpleDataWidgetBuilder<DATA> extends DataWidgetDelegate<DATA> {
     this.data = data;
   }
 
-  static SimpleDataWidgetBuilder<DATA> simple<DATA>(
+  static SimpleDataWidgetDelegate<DATA> simple<DATA>(
       Widget Function(BuildContext context, DATA data) builder) {
-    return _SimpleDataWidgetBuilderF<DATA>(builder);
+    return _SimpleDataWidgetDelegateF<DATA>(builder);
   }
 }
 
-class _SimpleDataWidgetBuilderF<DATA> extends SimpleDataWidgetBuilder<DATA> {
+class _SimpleDataWidgetDelegateF<DATA> extends SimpleDataWidgetDelegate<DATA> {
   Widget Function(BuildContext context, DATA data) builder;
 
-  _SimpleDataWidgetBuilderF(this.builder);
+  _SimpleDataWidgetDelegateF(this.builder);
 
   @override
   Widget build(BuildContext context) {
