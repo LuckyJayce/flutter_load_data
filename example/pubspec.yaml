@@ -27,8 +27,7 @@ dependencies:
   pull_to_refresh: ^1.6.1 #第三方下拉刷新 https://github.com/peng8350/flutter_pulltorefresh
   flutter_easyrefresh: ^2.1.6 #第三方下拉刷新 https://github.com/xuelongqy/flutter_easyrefresh
   load_data:
-    git:
-      url: git://github.com/LuckyJayce/flutter_load_data.git
+    path: ../
 
 
   # The following adds the Cupertino Icons font to your application.

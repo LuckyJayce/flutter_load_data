@@ -77,11 +77,9 @@ packages:
   load_data:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: b0eab8693a14ab9ae5a1fc7b49018661e608a426
-      url: "git://github.com/LuckyJayce/flutter_load_data.git"
-    source: git
+      path: ".."
+      relative: true
+    source: path
     version: "0.0.1"
   matcher:
     dependency: transitive

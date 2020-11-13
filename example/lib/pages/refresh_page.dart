@@ -15,13 +15,13 @@ class RefreshPage extends StatelessWidget {
   final RefreshWidgetType refreshType;
   final SourceType sourceType;
   final LoadController<List<Book>> controller = LoadController<List<Book>>();
-  final RefreshWidgetAdapter refreshWidgetAdapter;
+  final RefreshAdapter refreshAdapter;
 
   RefreshPage(this.refreshType, this.sourceType)
-      : refreshWidgetAdapter = refreshType == RefreshWidgetType.pull_to_refresh
-            ? PullToRefreshWidgetAdapter(
+      : refreshAdapter = refreshType == RefreshWidgetType.pull_to_refresh
+            ? PullToRefreshAdapter(
                 enableLoadMore: true, enableRefresh: true)
-            : EasyRefreshWidgetAdapter(
+            : EasyRefreshAdapter(
                 enableLoadMore: true, enableRefresh: true) {
     //测试添加回调并打印
     controller.addRefreshCallback(Callback.build<List<Book>>(onStart: () {
@@ -38,7 +38,7 @@ class RefreshPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(refreshWidgetAdapter.runtimeType.toString()),
+        title: Text(refreshAdapter.runtimeType.toString()),
         actions: <Widget>[
           new IconButton(
             // action button
@@ -105,18 +105,18 @@ class RefreshPage extends StatelessWidget {
   Widget buildByTask(BuildContext context) {
     return LoadDataWidget<List<Book>>.buildByTask(
         controller: controller,
-        refreshWidgetAdapter: refreshWidgetAdapter,
+        refreshAdapter: refreshAdapter,
         task: MyBookListTask(context),
         firstNeedRefresh: true,
-        dataWidgetBuilder: MyBookDataWidgetBuilder());
+        dataWidgetDelegate: MyBookDataWidgetDelegate());
   }
 
   Widget buildByDataSource(BuildContext context) {
     return LoadDataWidget<List<Book>>.buildByDataSource(
         controller: controller,
-        refreshWidgetAdapter: refreshWidgetAdapter,
+        refreshAdapter: refreshAdapter,
         dataSource: MyBookListDataSource(context),
         firstNeedRefresh: true,
-        dataWidgetBuilder: MyBookDataWidgetBuilder());
+        dataWidgetDelegate: MyBookDataWidgetDelegate());
   }
 }

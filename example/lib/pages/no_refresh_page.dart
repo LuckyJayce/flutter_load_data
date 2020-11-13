@@ -32,7 +32,7 @@ class NoRefreshPage extends StatelessWidget {
                 controller: controller,
                 firstNeedRefresh: false,
                 task: TestComputeTask(),
-                dataWidgetBuilder: TestComputeWidgetBuilder()),
+                dataWidgetDelegate: TestComputeWidgetDelegate()),
           )
         ],
       ),
@@ -40,7 +40,7 @@ class NoRefreshPage extends StatelessWidget {
   }
 }
 
-class TestComputeWidgetBuilder extends SimpleDataWidgetBuilder<int> {
+class TestComputeWidgetDelegate extends SimpleDataWidgetDelegate<int> {
   @override
   Widget build(BuildContext context) {
     return Center(

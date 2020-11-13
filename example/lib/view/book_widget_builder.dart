@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:load_data/load_data.dart';
 
-class MyBookDataWidgetBuilder implements DataWidgetBuilder<List<Book>> {
+class MyBookDataWidgetDelegate implements DataWidgetDelegate<List<Book>> {
   List<Book> list = [];
 
   @override
