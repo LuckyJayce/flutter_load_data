@@ -70,7 +70,7 @@
 ## 2.实现 DataWidgetDelegate显示加载成功的数据	
 **Demo 例如：显示书籍列表数据**
 
-	class BookListDataWidgetBuilder implements DataWidgetBuilder<List<Book>> {
+	class BookListWidgetDelegate implements DataWidgetDelegate<List<Book>> {
 	  List<Book> list = [];
 	  
 	  @override
@@ -119,9 +119,9 @@
 	        title: Text('BookList'),
 	      ),
 	      body: LoadDataWidget<List<Book>>.buildByDataSource(
-	          refreshWidgetAdapter: PullToRefreshWidgetAdapter(),
-	          dataSource: MyBookListDataSource(context),
-	          dataWidgetBuilder: MyBookDataWidgetBuilder()),
+	          refreshAdapter: PullToRefreshAdapter(),
+	          dataSource: BookListDataSource(context),
+	          dataWidgetDelegate: BookListWidgetDelegate()),
 	    );
 	  }
 	}
@@ -179,10 +179,10 @@ class SimpleRefreshPage extends StatelessWidget {
         title: Text('BookList'),
       ),
       body: LoadDataWidget<List<Book>>.buildByDataSource(
-        refreshWidgetAdapter: PullToRefreshWidgetAdapter(),
+        refreshAdapter: PullToRefreshWidgetAdapter(),
         dataSource: BookListDataSource(),
-        dataWidgetBuilder: BookListDataWidgetDelegate(),
-        statusWidgetBuilder: DefaultStatusWidgetDelegate(),
+        dataWidgetDelegate: BookListDataWidgetDelegate(),
+        statusWidgetDelegate: DefaultStatusWidgetDelegate(),
       ),
     );
   }
