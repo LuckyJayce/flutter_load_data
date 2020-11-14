@@ -2,7 +2,7 @@ import 'package:example/model/book_list_datasource.dart';
 import 'package:example/model/book_list_task.dart';
 import 'package:example/model/entity/book.dart';
 import 'package:example/model/test_data_model.dart';
-import 'package:example/view/book_widget_builder.dart';
+import 'package:example/view/book_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:load_data/load_data.dart';
