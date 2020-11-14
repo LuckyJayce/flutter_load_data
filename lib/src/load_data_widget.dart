@@ -6,18 +6,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'data_source.dart';
-import 'data_widget_delegate.dart';
+import 'data_delegate.dart';
 import 'task.dart';
 import 'task_helper.dart';
 import 'refresh/no_refresh_adapter.dart';
-import 'refresh_widget_adapter.dart';
-import 'status_widget_delegate.dart';
+import 'refresh_adapter.dart';
+import 'status_delegate.dart';
 
 class LoadDataWidget<DATA> extends StatefulWidget {
   final DataSource<DATA> dataSource;
+  final DataDelegate<DATA> dataDelegate;
+  final StatusDelegate statusDelegate;
   final RefreshAdapter refreshAdapter;
-  final DataWidgetDelegate<DATA> dataWidgetDelegate;
-  final StatusWidgetDelegate statusWidgetDelegate;
   final LoadController<DATA> controller;
   final bool firstNeedRefresh;
 
@@ -28,18 +28,18 @@ class LoadDataWidget<DATA> extends StatefulWidget {
 
   LoadDataWidget.buildByDataSource({
     @required this.dataSource, //加载数据的dataSource
-    @required this.dataWidgetDelegate, //加载成功数据的widgetBuilder
+    @required this.dataDelegate, //加载成功数据的widgetBuilder
     this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
-    this.statusWidgetDelegate, //根据加载创建unload,loading,fail,empty等布局，如果不传默认使用DefaultStatusWidgetBuilder
+    this.statusDelegate, //根据加载创建unload,loading,fail,empty等布局，如果不传默认使用DefaultStatusWidgetBuilder
     this.firstNeedRefresh = true, //当布局加载的时候是否自动调用刷新加载数据
     this.refreshAdapter, //刷新控件适配器，如果不传默认不带有刷新功能
   });
 
   LoadDataWidget.buildByTask({
     @required Task<DATA> task, //加载数据的task，相比于dataSource只有刷新没有加载更多的功能
-    @required this.dataWidgetDelegate, //加载成功数据的widgetBuilder
+    @required this.dataDelegate, //加载成功数据的widgetBuilder
+    this.statusDelegate, //根据加载创建unload,loading,fail,empty等布局，如果不传默认使用DefaultStatusWidgetBuilder
     this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
-    this.statusWidgetDelegate, //根据加载创建unload,loading,fail,empty等布局，如果不传默认使用DefaultStatusWidgetBuilder
     this.firstNeedRefresh = true, //当布局加载的时候是否自动调用刷新加载数据
     this.refreshAdapter, //刷新控件适配器，如果不传默认不带有刷新功能
   }) : this.dataSource = DataSource.buildByTask<DATA>(task);
@@ -54,8 +54,8 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     _loadControllerImp.set(
         context: context,
         dataSource: widget.dataSource,
-        statusWidgetDelegate: widget.statusWidgetDelegate,
-        dataWidgetDelegate: widget.dataWidgetDelegate,
+        statusWidgetDelegate: widget.statusDelegate,
+        dataWidgetDelegate: widget.dataDelegate,
         refreshAdapter: widget.refreshAdapter);
     if (widget.controller != null) {
       widget.controller._setControllerImp(_loadControllerImp);
@@ -81,8 +81,8 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     _loadControllerImp.set(
         context: context,
         dataSource: widget.dataSource,
-        statusWidgetDelegate: widget.statusWidgetDelegate,
-        dataWidgetDelegate: widget.dataWidgetDelegate,
+        statusWidgetDelegate: widget.statusDelegate,
+        dataWidgetDelegate: widget.dataDelegate,
         refreshAdapter: widget.refreshAdapter);
     if (widget.controller != null) {
       widget.controller._setControllerImp(_loadControllerImp);
@@ -184,8 +184,8 @@ class LoadController<DATA> {
 
 class _LoadControllerImp<DATA> {
   DataSource<DATA> dataSource;
-  DataWidgetDelegate<DATA> dataWidgetDelegate;
-  StatusWidgetDelegate statusWidgetDelegate;
+  DataDelegate<DATA> dataWidgetDelegate;
+  StatusDelegate statusWidgetDelegate;
   Widget contentWidget;
   Widget statusWidget;
   Widget refreshWidget;
@@ -203,9 +203,9 @@ class _LoadControllerImp<DATA> {
   void set(
       {BuildContext context,
       @required DataSource<DATA> dataSource,
-      @required DataWidgetDelegate<DATA> dataWidgetDelegate,
+      @required DataDelegate<DATA> dataWidgetDelegate,
       RefreshAdapter refreshAdapter,
-      StatusWidgetDelegate statusWidgetDelegate}) {
+      StatusDelegate statusWidgetDelegate}) {
     if (statusWidgetDelegate == null) {
       statusWidgetDelegate = DefaultStatusWidgetDelegate();
     }

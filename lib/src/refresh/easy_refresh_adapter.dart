@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 
 import '../load_data_widget.dart';
-import '../refresh_widget_adapter.dart';
+import '../refresh_adapter.dart';
 
 //适配 https://github.com/xuelongqy/flutter_easyrefresh 刷新控件
 class EasyRefreshAdapter implements RefreshAdapter {

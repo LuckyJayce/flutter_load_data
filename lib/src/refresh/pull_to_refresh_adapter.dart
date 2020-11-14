@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../load_data_widget.dart';
-import '../refresh_widget_adapter.dart';
+import '../refresh_adapter.dart';
 
 //适配 https://github.com/peng8350/flutter_pulltorefresh 刷新控件
 class PullToRefreshAdapter implements RefreshAdapter {

@@ -19,10 +19,8 @@ class RefreshPage extends StatelessWidget {
 
   RefreshPage(this.refreshType, this.sourceType)
       : refreshAdapter = refreshType == RefreshWidgetType.pull_to_refresh
-            ? PullToRefreshAdapter(
-                enableLoadMore: true, enableRefresh: true)
-            : EasyRefreshAdapter(
-                enableLoadMore: true, enableRefresh: true) {
+            ? PullToRefreshAdapter(enableLoadMore: true, enableRefresh: true)
+            : EasyRefreshAdapter(enableLoadMore: true, enableRefresh: true) {
     //测试添加回调并打印
     controller.addRefreshCallback(Callback.build<List<Book>>(onStart: () {
       print('onPreExecute');
@@ -106,9 +104,9 @@ class RefreshPage extends StatelessWidget {
     return LoadDataWidget<List<Book>>.buildByTask(
         controller: controller,
         refreshAdapter: refreshAdapter,
-        task: MyBookListTask(context),
         firstNeedRefresh: true,
-        dataWidgetDelegate: MyBookDataWidgetDelegate());
+        task: MyBookListTask(context),
+        dataDelegate: MyBookDataWidgetDelegate());
   }
 
   Widget buildByDataSource(BuildContext context) {
@@ -117,6 +115,6 @@ class RefreshPage extends StatelessWidget {
         refreshAdapter: refreshAdapter,
         dataSource: MyBookListDataSource(context),
         firstNeedRefresh: true,
-        dataWidgetDelegate: MyBookDataWidgetDelegate());
+        dataDelegate: MyBookDataWidgetDelegate());
   }
 }

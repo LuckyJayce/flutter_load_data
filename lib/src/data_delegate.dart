@@ -6,7 +6,7 @@
 import 'package:flutter/widgets.dart';
 
 ///数据加载成功显示的WidgetBuilder
-abstract class DataWidgetDelegate<DATA> {
+abstract class DataDelegate<DATA> {
   ///获取数据成功后 通过这个方法更新数据
   ///data DataSource或者task方法的数据，
   ///refresh 是否是通过DataSource refresh方法返回的，false 表示通过loadMore返回的数据
@@ -21,14 +21,14 @@ abstract class DataWidgetDelegate<DATA> {
   ///提供外部最终的data
   DATA getData();
 
-  static DataWidgetDelegate<DATA> simple<DATA>(
+  static DataDelegate<DATA> simple<DATA>(
       Widget Function(BuildContext context, DATA data) builder) {
-    return SimpleDataWidgetDelegate.simple<DATA>(builder);
+    return SimpleDataDelegate.simple<DATA>(builder);
   }
 }
 
 ///只有刷新没有加载更多的DataWidgetBuilder
-abstract class SimpleDataWidgetDelegate<DATA> extends DataWidgetDelegate<DATA> {
+abstract class SimpleDataDelegate<DATA> extends DataDelegate<DATA> {
   DATA data;
 
   @override
@@ -46,13 +46,13 @@ abstract class SimpleDataWidgetDelegate<DATA> extends DataWidgetDelegate<DATA> {
     this.data = data;
   }
 
-  static SimpleDataWidgetDelegate<DATA> simple<DATA>(
+  static SimpleDataDelegate<DATA> simple<DATA>(
       Widget Function(BuildContext context, DATA data) builder) {
     return _SimpleDataWidgetDelegateF<DATA>(builder);
   }
 }
 
-class _SimpleDataWidgetDelegateF<DATA> extends SimpleDataWidgetDelegate<DATA> {
+class _SimpleDataWidgetDelegateF<DATA> extends SimpleDataDelegate<DATA> {
   Widget Function(BuildContext context, DATA data) builder;
 
   _SimpleDataWidgetDelegateF(this.builder);
