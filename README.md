@@ -24,8 +24,10 @@
 ## 2.可选：   ##
 1. 如果使用[flutter_pulltorefresh](https://github.com/peng8350/flutter_pulltorefresh)作为刷新可以控件下面方式导入, 并使用PullToRefreshWidgetAdapter
 
-    	//上面链接查看具体版本
-        	pull_to_refresh: x.x.x
+     ```
+     //上面链接查看具体版本
+     pull_to_refresh: x.x.x
+     ```
 
 2. 如果使用[flutter_easyrefresh](https://github.com/xuelongqy/flutter_easyrefresh)作为刷新可以控件下面方式导入，并使用EasyRefreshWidgetAdapter
 
@@ -70,7 +72,7 @@
 ## 2.实现 DataWidgetDelegate显示加载成功的数据	
 **Demo 例如：显示书籍列表数据**
 
-	class BookListWidgetDelegate implements DataWidgetDelegate<List<Book>> {
+	class BookListDelegate implements DataDelegate<List<Book>> {
 	  List<Book> list = [];
 	  
 	  @override
@@ -121,12 +123,12 @@
 	      body: LoadDataWidget<List<Book>>.buildByDataSource(
 	          refreshAdapter: PullToRefreshAdapter(),
 	          dataSource: BookListDataSource(context),
-	          dataWidgetDelegate: BookListWidgetDelegate()),
+	          dataDelegate: BookListDelegate()),
 	    );
 	  }
 	}
 
-上面的PullToRefreshWidgetAdapter也可以切换EasyRefreshWidgetAdapter()
+上面的PullToRefreshAdapter也可以切换EasyRefreshAdapter()
 
 **通过上面3个简单步骤实现一个带有下拉刷新，加载，失败状态切换处理和显示列表数据的页面**
 
@@ -144,7 +146,7 @@
 
 ```
 ///状态布局widgetBuilder
-abstract class StatusWidgetDelegate {
+abstract class StatusDelegate {
   Widget buildUnLoadWidget(BuildContext context, [VoidCallback refreshToken]);
 
   /// 显示加载中
@@ -168,7 +170,7 @@ abstract class StatusWidgetDelegate {
 }
 ```
 
-Demo：实现StatusWidgetDelegate 参考：lib里面的 DefaultStatusWidgetDelegate，然后将下面statusWidgetDelegate改为自定义的即可
+Demo：实现StatusDelegate 参考：lib里面的 DefaultStatusDelegate，然后将下面statusDelegate改为自定义的即可
 
 ```
 class SimpleRefreshPage extends StatelessWidget {
@@ -179,10 +181,10 @@ class SimpleRefreshPage extends StatelessWidget {
         title: Text('BookList'),
       ),
       body: LoadDataWidget<List<Book>>.buildByDataSource(
-        refreshAdapter: PullToRefreshWidgetAdapter(),
+        refreshAdapter: PullToRefreshAdapter(),
         dataSource: BookListDataSource(),
-        dataWidgetDelegate: BookListDataWidgetDelegate(),
-        statusWidgetDelegate: DefaultStatusWidgetDelegate(),
+        dataDelegate: BookListDataDelegate(),
+        statusDelegate: DefaultStatusDelegate(),
       ),
     );
   }

@@ -30,7 +30,7 @@ abstract class StatusDelegate {
   void tipFail(BuildContext context, Object error, [VoidCallback refreshToken]);
 }
 
-class DefaultStatusWidgetDelegate implements StatusDelegate {
+class DefaultStatusDelegate implements StatusDelegate {
   @override
   Widget buildUnLoadWidget(BuildContext context, [VoidCallback refreshToken]) {
     return Container(

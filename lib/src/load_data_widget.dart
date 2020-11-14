@@ -207,7 +207,7 @@ class _LoadControllerImp<DATA> {
       RefreshAdapter refreshAdapter,
       StatusDelegate statusWidgetDelegate}) {
     if (statusWidgetDelegate == null) {
-      statusWidgetDelegate = DefaultStatusWidgetDelegate();
+      statusWidgetDelegate = DefaultStatusDelegate();
     }
     if (refreshAdapter == null) {
       refreshAdapter = NoRefreshAdapter();
