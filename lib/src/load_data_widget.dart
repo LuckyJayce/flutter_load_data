@@ -78,6 +78,9 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   @override
   void didUpdateWidget(covariant LoadDataWidget<DATA> oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (_loadControllerImp.dataWidgetDelegate != widget.dataDelegate) {
+      _loadControllerImp.dataWidgetDelegate?.dispose();
+    }
     _loadControllerImp.set(
         context: context,
         dataSource: widget.dataSource,
@@ -99,6 +102,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
 
   @override
   void dispose() {
+    _loadControllerImp.dataWidgetDelegate.dispose();
     _loadControllerImp.dispose();
     super.dispose();
   }

@@ -25,6 +25,8 @@ abstract class DataDelegate<DATA> {
       Widget Function(BuildContext context, DATA data) builder) {
     return SimpleDataDelegate.simple<DATA>(builder);
   }
+
+  void dispose() {}
 }
 
 ///只有刷新没有加载更多的DataWidgetBuilder
