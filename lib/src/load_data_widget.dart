@@ -18,7 +18,7 @@ class LoadDataWidget<DATA> extends StatefulWidget {
   final ConfigCreate<DATA> configCreate;
 
   LoadDataWidget({
-    @required this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
+    this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
     @required this.configCreate, //加载成功数据的widgetBuilder
   });
 

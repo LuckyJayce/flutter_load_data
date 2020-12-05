@@ -9,8 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:load_data/load_data.dart';
 
 class SimpleRefreshPage extends StatelessWidget {
-  final LoadController<List<Book>> controller = LoadController();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +16,6 @@ class SimpleRefreshPage extends StatelessWidget {
         title: Text('BookList'),
       ),
       body: LoadDataWidget<List<Book>>(
-        controller: controller,
         configCreate: (context) {
           return LoadConfig(
             dataSource: BookListDataSource(),
