@@ -73,16 +73,6 @@
 **Demo 例如：显示书籍列表数据**
 
 	class BookListDelegate implements DataDelegate<List<Book>> {
-	  List<Book> list = [];
-	  
-	  @override
-	  void notifyDataChange(List<Book> data, bool refresh) {
-	    if (refresh) {
-	      list.clear();
-	    }
-	    list.addAll(data);
-	  }
-	  
 	  @override
 	  Widget build(BuildContext context) {
 	    return ListView.separated(
@@ -96,16 +86,6 @@
 	      separatorBuilder: (context, index) => Divider(),
 	      itemCount: list.length,
 	    );
-	  }
-	
-	  @override
-	  List<Book> getData() {
-	    return list;
-	  }
-	
-	  @override
-	  bool isEmpty() {
-	    return list.isEmpty;
 	  }
 	}
 
@@ -121,9 +101,15 @@
 	        title: Text('BookList'),
 	      ),
 	      body: LoadDataWidget<List<Book>>.buildByDataSource(
-	          refreshAdapter: PullToRefreshAdapter(),
-	          dataSource: BookListDataSource(context),
-	          dataDelegate: BookListDelegate()),
+	       		configCreate: (context, oldConfig) {
+	          		return LoadConfig(
+	            		dataSource: BookListDataSource(),
+	            		dataManager: ListDataManager(),
+	            		dataDelegate: BookListDelegate(),
+	            		refreshAdapter: PullToRefreshAdapter(),
+	          		);
+	        	},
+	      ),
 	    );
 	  }
 	}
@@ -183,7 +169,7 @@ class SimpleRefreshPage extends StatelessWidget {
       body: LoadDataWidget<List<Book>>.buildByDataSource(
         refreshAdapter: PullToRefreshAdapter(),
         dataSource: BookListDataSource(),
-        dataDelegate: BookListDataDelegate(),
+        dataDelegate: BookListDelegate(),
         statusDelegate: DefaultStatusDelegate(),
       ),
     );
