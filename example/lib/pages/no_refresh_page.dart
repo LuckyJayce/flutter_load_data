@@ -5,7 +5,7 @@ import 'package:load_data/load_data.dart';
 
 //演示没有下拉刷新，并且非list的demo
 class NoRefreshPage extends StatelessWidget {
-  final LoadController controller = LoadController();
+  final LoadController<int> controller = LoadController<int>();
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +28,16 @@ class NoRefreshPage extends StatelessWidget {
               },
               child: Text('cancel')),
           Expanded(
-            child: LoadDataWidget.buildByTask(
-                controller: controller,
-                firstNeedRefresh: false,
-                task: TestComputeTask(),
-                dataDelegate: TestComputeDelegate()),
+            child: LoadDataWidget<int>(
+              controller: controller,
+              configCreate: (context) {
+                return LoadConfig<int>(
+                  dataSource: DataSource.buildByTask(TestComputeTask()),
+                  dataDelegate: TestComputeDelegate(),
+                  dataManager: SimpleDataManager(),
+                );
+              },
+            ),
           )
         ],
       ),
@@ -40,11 +45,11 @@ class NoRefreshPage extends StatelessWidget {
   }
 }
 
-class TestComputeDelegate extends SimpleDataDelegate<int> {
+class TestComputeDelegate extends DataDelegate<int> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, int data) {
     return Center(
-      child: Text('${getData()}'),
+      child: Text('$data'),
     );
   }
 }

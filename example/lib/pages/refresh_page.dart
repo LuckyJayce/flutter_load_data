@@ -101,20 +101,30 @@ class RefreshPage extends StatelessWidget {
   }
 
   Widget buildByTask(BuildContext context) {
-    return LoadDataWidget<List<Book>>.buildByTask(
-        controller: controller,
-        refreshAdapter: refreshAdapter,
-        firstNeedRefresh: true,
-        task: MyBookListTask(context),
-        dataDelegate: MyBookDataWidgetDelegate());
+    return LoadDataWidget(
+      controller: controller,
+      configCreate: (context) {
+        return LoadConfig<List<Book>>(
+          dataSource: DataSource.buildByTask(MyBookListTask(context)),
+          dataDelegate: MyBookDataWidgetDelegate(),
+          dataManager: SimpleDataManager(),
+          firstNeedRefresh: true,
+        );
+      },
+    );
   }
 
   Widget buildByDataSource(BuildContext context) {
-    return LoadDataWidget<List<Book>>.buildByDataSource(
-        controller: controller,
-        refreshAdapter: refreshAdapter,
-        dataSource: MyBookListDataSource(context),
-        firstNeedRefresh: true,
-        dataDelegate: MyBookDataWidgetDelegate());
+    return LoadDataWidget(
+      controller: controller,
+      configCreate: (context) {
+        return LoadConfig<List<Book>>(
+          dataSource: MyBookListDataSource(context),
+          dataDelegate: MyBookDataWidgetDelegate(),
+          dataManager: ListDataManager(),
+          firstNeedRefresh: true,
+        );
+      },
+    );
   }
 }
