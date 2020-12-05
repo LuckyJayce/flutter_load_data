@@ -14,7 +14,7 @@ enum SourceType { data_source, task }
 class RefreshPage extends StatelessWidget {
   final RefreshWidgetType refreshType;
   final SourceType sourceType;
-  final LoadController<List<Book>> controller = LoadController<List<Book>>();
+  final LoadController<List<Book>> controller = LoadController();
   final RefreshAdapter refreshAdapter;
 
   RefreshPage(this.refreshType, this.sourceType)
@@ -101,10 +101,10 @@ class RefreshPage extends StatelessWidget {
   }
 
   Widget buildByTask(BuildContext context) {
-    return LoadDataWidget(
+    return LoadDataWidget<List<Book>>(
       controller: controller,
       configCreate: (context) {
-        return LoadConfig<List<Book>>(
+        return LoadConfig(
           dataSource: DataSource.buildByTask(MyBookListTask(context)),
           dataDelegate: MyBookDataWidgetDelegate(),
           dataManager: SimpleDataManager(),
@@ -115,10 +115,10 @@ class RefreshPage extends StatelessWidget {
   }
 
   Widget buildByDataSource(BuildContext context) {
-    return LoadDataWidget(
+    return LoadDataWidget<List<Book>>(
       controller: controller,
       configCreate: (context) {
-        return LoadConfig<List<Book>>(
+        return LoadConfig(
           dataSource: MyBookListDataSource(context),
           dataDelegate: MyBookDataWidgetDelegate(),
           dataManager: ListDataManager(),

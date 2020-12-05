@@ -17,7 +17,7 @@ abstract class Callback<DATA> {
 
   void onEnd(ResultCode code, DATA data, Object error);
 
-  static Callback build<DATA>(
+  static Callback<DATA> build<DATA>(
       {VoidCallback onStart,
       ProgressCallback onProgress,
       EndCallback<DATA> onEnd}) {

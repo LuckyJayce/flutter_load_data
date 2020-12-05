@@ -15,7 +15,7 @@ import 'status_delegate.dart';
 
 class LoadDataWidget<DATA> extends StatefulWidget {
   final LoadController<DATA> controller;
-  final configCreate;
+  final ConfigCreate<DATA> configCreate;
 
   LoadDataWidget({
     @required this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
