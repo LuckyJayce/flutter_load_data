@@ -9,6 +9,8 @@ import '../load_data_widget.dart';
 import '../refresh_adapter.dart';
 
 class NoRefreshAdapter extends RefreshAdapter {
+  const NoRefreshAdapter();
+
   @override
   bool get enableLoadMore => false;
 

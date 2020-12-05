@@ -9,6 +9,8 @@ import 'load_data_widget.dart';
 
 ///刷新控件适配器
 abstract class RefreshAdapter {
+  const RefreshAdapter();
+
   Widget wrapChild(BuildContext context, WidgetStatus status,
       Widget statusWidget, Widget contentWidget);
 

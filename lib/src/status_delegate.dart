@@ -31,6 +31,8 @@ abstract class StatusDelegate {
 }
 
 class DefaultStatusDelegate implements StatusDelegate {
+  const DefaultStatusDelegate();
+
   @override
   Widget buildUnLoadWidget(BuildContext context, [VoidCallback refreshToken]) {
     return Container(

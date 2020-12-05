@@ -38,13 +38,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   void initState() {
     super.initState();
     loadConfig = widget.configCreate(context, null);
-    _loadControllerImp.set(
-        context: context,
-        dataSource: loadConfig.dataSource,
-        dataManager: loadConfig.dataManager,
-        statusWidgetDelegate: loadConfig.statusDelegate,
-        dataWidgetDelegate: loadConfig.dataDelegate,
-        refreshAdapter: loadConfig.refreshAdapter);
+    _loadControllerImp.set(context: context, loadConfig: loadConfig);
     if (widget.controller != null) {
       widget.controller._setControllerImp(_loadControllerImp);
     }
@@ -78,11 +72,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
         loadConfig = widget.configCreate(context, old);
         _loadControllerImp.set(
           context: context,
-          dataSource: loadConfig.dataSource,
-          dataManager: loadConfig.dataManager,
-          statusWidgetDelegate: loadConfig.statusDelegate,
-          dataWidgetDelegate: loadConfig.dataDelegate,
-          refreshAdapter: loadConfig.refreshAdapter,
+          loadConfig: loadConfig,
         );
         if (old.dataSource != loadConfig.dataSource) {
           _loadControllerImp.refresh();
@@ -140,6 +130,10 @@ class LoadController<DATA> {
     }
   }
 
+  DATA getData() {
+    return _loadControllerImp?.loadConfig?.dataManager?.getData();
+  }
+
   void refresh({RefreshingType refreshingType = RefreshingType.auto}) {
     _loadControllerImp?.refresh(refreshingType: refreshingType);
   }
@@ -186,17 +180,12 @@ class LoadController<DATA> {
 }
 
 class _LoadControllerImp<DATA> {
-  DataSource<DATA> dataSource;
-  DataDelegate<DATA> dataWidgetDelegate;
-  StatusDelegate statusWidgetDelegate;
-  DataManager<DATA> dataManager;
+  BuildContext context;
+  LoadConfig<DATA> loadConfig;
+
   Widget contentWidget;
   Widget statusWidget;
   Widget refreshWidget;
-  WidgetBuilder widgetBuilder;
-  RefreshAdapter refreshWidgetAdapter;
-  BuildContext context;
-
   WidgetStatus status;
 
   CallbackList<DATA> refreshCallbackList = CallbackList<DATA>();
@@ -206,27 +195,11 @@ class _LoadControllerImp<DATA> {
   bool isLoadMoreIng = false;
   final TaskHelper taskHelper = TaskHelper();
 
-  void set(
-      {BuildContext context,
-      @required DataSource<DATA> dataSource,
-      @required DataManager<DATA> dataManager,
-      @required DataDelegate<DATA> dataWidgetDelegate,
-      RefreshAdapter refreshAdapter,
-      StatusDelegate statusWidgetDelegate}) {
-    if (statusWidgetDelegate == null) {
-      statusWidgetDelegate = DefaultStatusDelegate();
-    }
-    if (refreshAdapter == null) {
-      refreshAdapter = NoRefreshAdapter();
-    }
-    this.dataSource = dataSource;
-    this.dataManager = dataManager;
-    this.dataWidgetDelegate = dataWidgetDelegate;
-    this.refreshWidgetAdapter = refreshAdapter;
-    this.statusWidgetDelegate = statusWidgetDelegate;
-
-    refreshAdapter.setOnRefreshListener(_refresh);
-    refreshAdapter.setOnLoadMoreListener(_loadMore);
+  void set({BuildContext context, LoadConfig<DATA> loadConfig}) {
+    this.loadConfig = loadConfig;
+    this.context = context;
+    loadConfig.refreshAdapter.setOnRefreshListener(_refresh);
+    loadConfig.refreshAdapter.setOnLoadMoreListener(_loadMore);
   }
 
   Widget getWidget() {
@@ -240,18 +213,18 @@ class _LoadControllerImp<DATA> {
   void refresh({RefreshingType refreshingType = RefreshingType.auto}) {
     switch (refreshingType) {
       case RefreshingType.refresh_widget:
-        refreshWidgetAdapter.requestRefresh();
+        loadConfig.refreshAdapter.requestRefresh();
         break;
       case RefreshingType.status_widget:
         _refresh(showLoadingWidget: true);
         break;
       case RefreshingType.auto:
-        if (refreshWidgetAdapter != null &&
-            refreshWidgetAdapter.enableRefresh) {
-          if (dataManager.isEmpty()) {
+        if (loadConfig.refreshAdapter != null &&
+            loadConfig.refreshAdapter.enableRefresh) {
+          if (loadConfig.dataManager.isEmpty()) {
             _refresh(showLoadingWidget: true);
           } else {
-            refreshWidgetAdapter.requestRefresh();
+            loadConfig.refreshAdapter.requestRefresh();
           }
         } else {
           _refresh(showLoadingWidget: true);
@@ -266,16 +239,16 @@ class _LoadControllerImp<DATA> {
   void loadMore({RefreshingType refreshingType = RefreshingType.auto}) {
     switch (refreshingType) {
       case RefreshingType.refresh_widget:
-        refreshWidgetAdapter.requestLoadMore();
+        loadConfig.refreshAdapter.requestLoadMore();
         break;
       case RefreshingType.status_widget:
         _loadMore(showLoadingWidget: true);
         break;
       case RefreshingType.auto:
-        if (dataManager.isEmpty()) {
+        if (loadConfig.dataManager.isEmpty()) {
           _loadMore(showLoadingWidget: true);
         } else {
-          refreshWidgetAdapter.requestLoadMore();
+          loadConfig.refreshAdapter.requestLoadMore();
         }
         break;
       case RefreshingType.none:
@@ -303,7 +276,7 @@ class _LoadControllerImp<DATA> {
       switch (code) {
         case ResultCode.success:
           //通知更新数据
-          dataManager.notifyDataChange(data, true);
+          loadConfig.dataManager.notifyDataChange(data, true);
           buildSuccessWidget(true);
           break;
         case ResultCode.fail:
@@ -313,28 +286,29 @@ class _LoadControllerImp<DATA> {
           buildCancelWidget(true);
           break;
       }
-      refreshWidgetAdapter.finishRefresh(
-          context, code == ResultCode.success, error, !dataSource.hasMore());
+      loadConfig.refreshAdapter.finishRefresh(context,
+          code == ResultCode.success, error, !loadConfig.dataSource.hasMore());
       isRefreshing = false;
       //通知监听更新
       refreshCallbackList.onEnd(code, data, error);
       completer.complete();
     });
-    taskHelper.executeByFunction<DATA>(dataSource.refresh, callback: callback);
+    taskHelper.executeByFunction<DATA>(loadConfig.dataSource.refresh,
+        callback: callback);
     return completer.future;
   }
 
   Future<void> _loadMore({bool showLoadingWidget = false}) {
     Completer completer = new Completer();
     if (isLoading()) {
-      refreshWidgetAdapter.finishLoadMore(
-          context, true, null, !dataSource.hasMore());
+      loadConfig.refreshAdapter.finishLoadMore(
+          context, true, null, !loadConfig.dataSource.hasMore());
       completer.complete();
       return completer.future;
     }
-    if (!dataSource.hasMore()) {
-      refreshWidgetAdapter.finishLoadMore(
-          context, true, null, !dataSource.hasMore());
+    if (!loadConfig.dataSource.hasMore()) {
+      loadConfig.refreshAdapter.finishLoadMore(
+          context, true, null, !loadConfig.dataSource.hasMore());
       completer.complete();
       return completer.future;
     }
@@ -354,7 +328,7 @@ class _LoadControllerImp<DATA> {
       switch (code) {
         case ResultCode.success:
           //通知更新数据
-          dataManager.notifyDataChange(data, false);
+          loadConfig.dataManager.notifyDataChange(data, false);
           buildSuccessWidget(false);
           break;
         case ResultCode.fail:
@@ -364,13 +338,14 @@ class _LoadControllerImp<DATA> {
           buildCancelWidget(false);
           break;
       }
-      refreshWidgetAdapter.finishLoadMore(
-          context, code == ResultCode.success, error, !dataSource.hasMore());
+      loadConfig.refreshAdapter.finishLoadMore(context,
+          code == ResultCode.success, error, !loadConfig.dataSource.hasMore());
       isLoadMoreIng = false;
       loadMoreCallbackList.onEnd(code, data, error);
       completer.complete();
     });
-    taskHelper.executeByFunction<DATA>(dataSource.loadMore, callback: callback);
+    taskHelper.executeByFunction<DATA>(loadConfig.dataSource.loadMore,
+        callback: callback);
     return completer.future;
   }
 
@@ -379,35 +354,38 @@ class _LoadControllerImp<DATA> {
     this.status = status;
     this.statusWidget = statusWidget;
     this.contentWidget = contentWidget;
-    if (refreshWidgetAdapter != null) {
-      return refreshWidgetAdapter.wrapChild(
-          context, status, statusWidget, contentWidget);
+    if (loadConfig.refreshAdapter != null) {
+      return loadConfig.refreshAdapter
+          .wrapChild(context, status, statusWidget, contentWidget);
     }
     return status == WidgetStatus.normal ? contentWidget : statusWidget;
   }
 
   bool isUnload() {
-    return dataManager.getData() == null;
+    return loadConfig.dataManager.getData() == null;
   }
 
   void buildInit() {
-    if (dataManager.getData() == null) {
+    if (loadConfig.dataManager.getData() == null) {
       refreshWidget = refreshWrap(WidgetStatus.unload,
-          statusWidgetDelegate.buildUnLoadWidget(context, refresh), null);
+          loadConfig.statusDelegate.buildUnLoadWidget(context, refresh), null);
     } else {
-      refreshWidget = refreshWrap(WidgetStatus.normal, null,
-          dataWidgetDelegate.build(context, dataManager.getData()));
+      refreshWidget = refreshWrap(
+          WidgetStatus.normal,
+          null,
+          loadConfig.dataDelegate
+              .build(context, loadConfig.dataManager.getData()));
     }
   }
 
   void buildErrorWidget(bool isRefresh, Object error) {
-    if (dataManager.isEmpty()) {
+    if (loadConfig.dataManager.isEmpty()) {
       refreshWidget = refreshWrap(
           WidgetStatus.fail,
-          statusWidgetDelegate.buildFailWidget(context, error, refresh),
+          loadConfig.statusDelegate.buildFailWidget(context, error, refresh),
           contentWidget);
     } else {
-      statusWidgetDelegate.tipFail(context, error, refresh);
+      loadConfig.statusDelegate.tipFail(context, error, refresh);
     }
   }
 
@@ -415,33 +393,39 @@ class _LoadControllerImp<DATA> {
     if (isUnload()) {
       refreshWidget = refreshWrap(
           WidgetStatus.unload,
-          statusWidgetDelegate.buildUnLoadWidget(context, refresh),
+          loadConfig.statusDelegate.buildUnLoadWidget(context, refresh),
           contentWidget);
-    } else if (dataManager.isEmpty()) {
+    } else if (loadConfig.dataManager.isEmpty()) {
       refreshWidget = refreshWrap(
           WidgetStatus.fail,
-          statusWidgetDelegate.buildFailWidget(context, null, refresh),
+          loadConfig.statusDelegate.buildFailWidget(context, null, refresh),
           contentWidget);
     } else {
       if (contentWidget != null) {
         refreshWidget = refreshWrap(WidgetStatus.normal, null, contentWidget);
       } else {
-        refreshWidget = refreshWrap(WidgetStatus.normal, null,
-            dataWidgetDelegate.build(context, dataManager.getData()));
+        refreshWidget = refreshWrap(
+            WidgetStatus.normal,
+            null,
+            loadConfig.dataDelegate
+                .build(context, loadConfig.dataManager.getData()));
       }
     }
   }
 
   void buildSuccessWidget(bool isRefresh) {
-    if (!dataManager.isEmpty()) {
+    if (!loadConfig.dataManager.isEmpty()) {
       //数据不为空
-      refreshWidget = refreshWrap(WidgetStatus.normal, null,
-          dataWidgetDelegate.build(context, dataManager.getData()));
+      refreshWidget = refreshWrap(
+          WidgetStatus.normal,
+          null,
+          loadConfig.dataDelegate
+              .build(context, loadConfig.dataManager.getData()));
     } else {
       //如果数据为空，显示空数据--------------
       refreshWidget = refreshWrap(
           WidgetStatus.empty,
-          statusWidgetDelegate.buildEmptyWidget(context, refresh),
+          loadConfig.statusDelegate.buildEmptyWidget(context, refresh),
           contentWidget);
     }
   }
@@ -450,17 +434,18 @@ class _LoadControllerImp<DATA> {
     if (showLoadingWidget) {
       refreshWidget = refreshWrap(
           WidgetStatus.loading,
-          statusWidgetDelegate.buildLoadingWidget(context, null, null, null),
+          loadConfig.statusDelegate
+              .buildLoadingWidget(context, null, null, null),
           contentWidget);
     } else {
       //数据不为空,但是Widget为空
       if (statusWidget != null) {
         refreshWidget = refreshWrap(WidgetStatus.loading, statusWidget, null);
       } else {
-        if (dataManager.getData() == null) {
+        if (loadConfig.dataManager.getData() == null) {
           refreshWidget = refreshWrap(
               WidgetStatus.unload,
-              statusWidgetDelegate.buildUnLoadWidget(context, refresh),
+              loadConfig.statusDelegate.buildUnLoadWidget(context, refresh),
               contentWidget);
         } else {
           refreshWidget = refreshWrap(WidgetStatus.normal, null, contentWidget);
@@ -474,8 +459,8 @@ class _LoadControllerImp<DATA> {
     if (showLoadingWidget) {
       refreshWidget = refreshWrap(
           WidgetStatus.loading,
-          statusWidgetDelegate.buildLoadingWidget(
-              context, current, total, progressData),
+          loadConfig.statusDelegate
+              .buildLoadingWidget(context, current, total, progressData),
           contentWidget);
     }
   }
@@ -521,8 +506,8 @@ class LoadConfig<DATA> {
       {@required this.dataSource,
       @required this.dataManager,
       @required this.dataDelegate,
-      this.statusDelegate,
-      this.refreshAdapter,
+      this.statusDelegate = const DefaultStatusDelegate(),
+      this.refreshAdapter = const NoRefreshAdapter(),
       this.firstNeedRefresh = true});
 }
 
