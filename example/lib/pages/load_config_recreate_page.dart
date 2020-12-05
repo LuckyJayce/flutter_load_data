@@ -24,12 +24,12 @@ class _LoadConfigRecreatePageState extends State<LoadConfigRecreatePage> {
         title: Text('BookList'),
       ),
       body: LoadDataWidget<List<Book>>(
-        configCreate: (context) {
+        configCreate: (context, oldConfig) {
           return LoadConfig(
             dataSource: BookListDataSource(name),
-            dataManager: ListDataManager(),
-            dataDelegate: BookListDelegate(),
-            refreshAdapter: PullToRefreshAdapter(),
+            dataManager: oldConfig?.dataManager ?? ListDataManager(),
+            dataDelegate: oldConfig?.dataDelegate ?? BookListDelegate(),
+            refreshAdapter: oldConfig?.refreshAdapter ?? PullToRefreshAdapter(),
           );
         },
         shouldRecreate: (context, config) {

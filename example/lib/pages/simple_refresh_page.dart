@@ -16,7 +16,7 @@ class SimpleRefreshPage extends StatelessWidget {
         title: Text('BookList'),
       ),
       body: LoadDataWidget<List<Book>>(
-        configCreate: (context) {
+        configCreate: (context, oldConfig) {
           return LoadConfig(
             dataSource: BookListDataSource(),
             dataManager: ListDataManager(),

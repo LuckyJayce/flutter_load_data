@@ -30,7 +30,7 @@ class NoRefreshPage extends StatelessWidget {
           Expanded(
             child: LoadDataWidget<int>(
               controller: controller,
-              configCreate: (context) {
+              configCreate: (context, oldConfig) {
                 return LoadConfig<int>(
                   dataSource: DataSource.buildByTask(TestComputeTask()),
                   dataDelegate: TestComputeDelegate(),

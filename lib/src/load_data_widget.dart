@@ -37,7 +37,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   @override
   void initState() {
     super.initState();
-    loadConfig = widget.configCreate(context);
+    loadConfig = widget.configCreate(context, null);
     _loadControllerImp.set(
         context: context,
         dataSource: loadConfig.dataSource,
@@ -75,7 +75,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
       bool shouldRecreate = widget.shouldRecreate(context, loadConfig);
       if (shouldRecreate) {
         LoadConfig old = loadConfig;
-        loadConfig = widget.configCreate(context);
+        loadConfig = widget.configCreate(context, old);
         _loadControllerImp.set(
           context: context,
           dataSource: loadConfig.dataSource,
@@ -225,7 +225,7 @@ class _LoadControllerImp<DATA> {
     this.refreshWidgetAdapter = refreshAdapter;
     this.statusWidgetDelegate = statusWidgetDelegate;
 
-    refreshAdapter.setOnRefreshListener(_refresh);
+    refreshAdapter.setOnRefreshListener(_refreshByWidget);
     refreshAdapter.setOnLoadMoreListener(_loadMore);
   }
 
@@ -284,8 +284,19 @@ class _LoadControllerImp<DATA> {
     }
   }
 
-  Future<void> _refresh({bool showLoadingWidget = false}) {
+  Future<void> _refreshByWidget() {
+    return _refresh(refreshByWidget: true);
+  }
+
+  Future<void> _refresh(
+      {bool showLoadingWidget = false, bool refreshByWidget = false}) {
     Completer completer = new Completer();
+
+    if (!refreshByWidget) {
+      print('11111');
+      refreshWidgetAdapter.finishRefresh(context, true, null, false);
+    }
+
     taskHelper.cancelAll();
     isRefreshing = true;
 
@@ -525,7 +536,8 @@ class LoadConfig<DATA> {
       this.firstNeedRefresh = true});
 }
 
-typedef ConfigCreate<DATA> = LoadConfig<DATA> Function(BuildContext context);
+typedef ConfigCreate<DATA> = LoadConfig<DATA> Function(
+    BuildContext context, LoadConfig<DATA> oldConfig);
 
 typedef ShouldRecreate<DATA> = bool Function(
     BuildContext context, LoadConfig<DATA> config);

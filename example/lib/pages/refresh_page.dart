@@ -103,7 +103,7 @@ class RefreshPage extends StatelessWidget {
   Widget buildByTask(BuildContext context) {
     return LoadDataWidget<List<Book>>(
       controller: controller,
-      configCreate: (context) {
+      configCreate: (context, oldConfig) {
         return LoadConfig(
           dataSource: DataSource.buildByTask(MyBookListTask(context)),
           dataDelegate: MyBookDataWidgetDelegate(),
@@ -117,7 +117,7 @@ class RefreshPage extends StatelessWidget {
   Widget buildByDataSource(BuildContext context) {
     return LoadDataWidget<List<Book>>(
       controller: controller,
-      configCreate: (context) {
+      configCreate: (context, oldConfig) {
         return LoadConfig(
           dataSource: MyBookListDataSource(context),
           dataDelegate: MyBookDataWidgetDelegate(),
