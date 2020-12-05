@@ -100,15 +100,15 @@
 	      appBar: AppBar(
 	        title: Text('BookList'),
 	      ),
-	      body: LoadDataWidget<List<Book>>.buildByDataSource(
-	       		configCreate: (context, oldConfig) {
-	          		return LoadConfig(
-	            		dataSource: BookListDataSource(),
-	            		dataManager: ListDataManager(),
-	            		dataDelegate: BookListDelegate(),
-	            		refreshAdapter: PullToRefreshAdapter(),
-	          		);
-	        	},
+	      body: LoadDataWidget<List<Book>>(
+	        configCreate: (context, oldConfig) {
+	          return LoadConfig(
+	            dataSource: BookListDataSource(),
+	            dataManager: ListDataManager(),
+	            dataDelegate: BookListDelegate(),
+	            refreshAdapter: PullToRefreshAdapter(),
+	          );
+	        },
 	      ),
 	    );
 	  }
@@ -166,11 +166,16 @@ class SimpleRefreshPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('BookList'),
       ),
-      body: LoadDataWidget<List<Book>>.buildByDataSource(
-        refreshAdapter: PullToRefreshAdapter(),
-        dataSource: BookListDataSource(),
-        dataDelegate: BookListDelegate(),
-        statusDelegate: DefaultStatusDelegate(),
+      body: LoadDataWidget<List<Book>>(
+        configCreate: (context, oldConfig) {
+          return LoadConfig(
+            dataSource: BookListDataSource(),
+            dataManager: ListDataManager(),
+            dataDelegate: BookListDelegate(),
+            refreshAdapter: PullToRefreshAdapter(),
+            statusDelegate: DefaultStatusDelegate(),
+          );
+        },
       ),
     );
   }
