@@ -51,7 +51,7 @@ class _LoadConfigRecreatePageState extends State<LoadConfigRecreatePage> {
 
 ///获取列表数据
 class BookListDataSource implements DataSource<List<Book>> {
-  int page;
+  int page = 0;
   String name;
 
   BookListDataSource(this.name);
