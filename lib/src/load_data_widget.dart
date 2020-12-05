@@ -510,14 +510,14 @@ class _LoadControllerImp<DATA> {
 }
 
 class LoadConfig<DATA> {
-  DataSource<DATA> dataSource;
-  DataManager<DATA> dataManager;
-  DataDelegate<DATA> dataDelegate;
-  StatusDelegate statusDelegate;
-  RefreshAdapter refreshAdapter;
-  bool firstNeedRefresh;
+  final DataSource<DATA> dataSource;
+  final DataManager<DATA> dataManager;
+  final DataDelegate<DATA> dataDelegate;
+  final StatusDelegate statusDelegate;
+  final RefreshAdapter refreshAdapter;
+  final bool firstNeedRefresh;
 
-  LoadConfig(
+  const LoadConfig(
       {@required this.dataSource,
       @required this.dataManager,
       @required this.dataDelegate,
