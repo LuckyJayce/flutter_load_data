@@ -16,10 +16,12 @@ import 'status_delegate.dart';
 class LoadDataWidget<DATA> extends StatefulWidget {
   final LoadController<DATA> controller;
   final ConfigCreate<DATA> configCreate;
+  final ShouldRecreate<DATA> shouldRecreate;
 
   LoadDataWidget({
     this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
     @required this.configCreate, //加载成功数据的widgetBuilder
+    this.shouldRecreate, //加载成功数据的widgetBuilder
   });
 
   @override
@@ -68,6 +70,28 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     }
     if (oldWidget != null && oldWidget.controller != null) {
       oldWidget.controller._setControllerImp(null);
+    }
+    if (widget.shouldRecreate != null) {
+      bool shouldRecreate = widget.shouldRecreate(context, loadConfig);
+      if (shouldRecreate) {
+        LoadConfig old = loadConfig;
+        loadConfig = widget.configCreate(context);
+        _loadControllerImp.set(
+          context: context,
+          dataSource: loadConfig.dataSource,
+          dataManager: loadConfig.dataManager,
+          statusWidgetDelegate: loadConfig.statusDelegate,
+          dataWidgetDelegate: loadConfig.dataDelegate,
+          refreshAdapter: loadConfig.refreshAdapter,
+        );
+        if (old.dataSource != loadConfig.dataSource) {
+          widget.controller.refresh();
+        }
+        //TODO
+        // else if (old.dataDelegate != loadConfig.dataDelegate)
+        //   _loadControllerImp.refreshWrap(status, statusWidget, contentWidget);
+        // }
+      }
     }
   }
 
@@ -172,6 +196,8 @@ class _LoadControllerImp<DATA> {
   WidgetBuilder widgetBuilder;
   RefreshAdapter refreshWidgetAdapter;
   BuildContext context;
+
+  WidgetStatus status;
 
   CallbackList<DATA> refreshCallbackList = CallbackList<DATA>();
   CallbackList<DATA> loadMoreCallbackList = CallbackList<DATA>();
@@ -349,6 +375,7 @@ class _LoadControllerImp<DATA> {
 
   Widget refreshWrap(
       WidgetStatus status, Widget statusWidget, Widget contentWidget) {
+    this.status = status;
     this.statusWidget = statusWidget;
     this.contentWidget = contentWidget;
     if (refreshWidgetAdapter != null) {
@@ -499,3 +526,6 @@ class LoadConfig<DATA> {
 }
 
 typedef ConfigCreate<DATA> = LoadConfig<DATA> Function(BuildContext context);
+
+typedef ShouldRecreate<DATA> = bool Function(
+    BuildContext context, LoadConfig<DATA> config);
