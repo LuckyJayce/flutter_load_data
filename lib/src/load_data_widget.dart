@@ -225,7 +225,7 @@ class _LoadControllerImp<DATA> {
     this.refreshWidgetAdapter = refreshAdapter;
     this.statusWidgetDelegate = statusWidgetDelegate;
 
-    refreshAdapter.setOnRefreshListener(_refreshByWidget);
+    refreshAdapter.setOnRefreshListener(_refresh);
     refreshAdapter.setOnLoadMoreListener(_loadMore);
   }
 
@@ -284,18 +284,8 @@ class _LoadControllerImp<DATA> {
     }
   }
 
-  Future<void> _refreshByWidget() {
-    return _refresh(refreshByWidget: true);
-  }
-
-  Future<void> _refresh(
-      {bool showLoadingWidget = false, bool refreshByWidget = false}) {
+  Future<void> _refresh({bool showLoadingWidget = false}) {
     Completer completer = new Completer();
-
-    if (!refreshByWidget) {
-      print('11111');
-      refreshWidgetAdapter.finishRefresh(context, true, null, false);
-    }
 
     taskHelper.cancelAll();
     isRefreshing = true;
