@@ -85,7 +85,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
           refreshAdapter: loadConfig.refreshAdapter,
         );
         if (old.dataSource != loadConfig.dataSource) {
-          widget.controller.refresh();
+          _loadControllerImp.refresh();
         }
         //TODO
         // else if (old.dataDelegate != loadConfig.dataDelegate)
