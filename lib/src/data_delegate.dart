@@ -24,7 +24,6 @@ abstract class DataManager<DATA> {
   DATA getData();
 }
 
-///只有刷新没有加载更多的DataWidgetBuilder
 class SimpleDataManager<DATA> extends DataManager<DATA> {
   DATA data;
 
@@ -44,7 +43,6 @@ class SimpleDataManager<DATA> extends DataManager<DATA> {
   }
 }
 
-///只有刷新没有加载更多的DataWidgetBuilder
 class ListDataManager<E> extends DataManager<List<E>> {
   List<E> data = [];
 
