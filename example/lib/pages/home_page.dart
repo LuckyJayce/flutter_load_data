@@ -1,3 +1,5 @@
+import 'package:example/pages/append_data_page.dart';
+
 import 'load_config_recreate_page.dart';
 import 'no_refresh_page.dart';
 import 'abstract_demos_page.dart';
@@ -18,5 +20,6 @@ class HomePage extends AbstractDemosPage {
               RefreshPage(RefreshWidgetType.easy_refresh, SourceType.task),
           '/no refresh widget': (context) => NoRefreshPage(),
           '/LoadConfigRecreatePage': (context) => LoadConfigRecreatePage(),
+          '/AppendDataRefreshPage': (context) => AppendDataRefreshPage(),
         });
 }

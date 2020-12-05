@@ -38,7 +38,13 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   void initState() {
     super.initState();
     loadConfig = widget.configCreate(context, null);
-    _loadControllerImp.set(context: context, loadConfig: loadConfig);
+    _loadControllerImp.set(
+      context: context,
+      loadConfig: loadConfig,
+      setStateCall: () {
+        setState(() {});
+      },
+    );
     if (widget.controller != null) {
       widget.controller._setControllerImp(_loadControllerImp);
     }
@@ -73,6 +79,9 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
         _loadControllerImp.set(
           context: context,
           loadConfig: loadConfig,
+          setStateCall: () {
+            setState(() {});
+          },
         );
         if (old.dataSource != loadConfig.dataSource) {
           _loadControllerImp.refresh();
@@ -130,8 +139,16 @@ class LoadController<DATA> {
     }
   }
 
+  void rebuild() {
+    _loadControllerImp?.rebuild();
+  }
+
   DATA getData() {
     return _loadControllerImp?.loadConfig?.dataManager?.getData();
+  }
+
+  DataManager<DATA> getDataManager() {
+    return _loadControllerImp?.loadConfig?.dataManager;
   }
 
   void refresh({RefreshingType refreshingType = RefreshingType.auto}) {
@@ -194,12 +211,14 @@ class _LoadControllerImp<DATA> {
   bool isRefreshing = false;
   bool isLoadMoreIng = false;
   final TaskHelper taskHelper = TaskHelper();
+  VoidCallback setStateCall;
 
-  void set({BuildContext context, LoadConfig<DATA> loadConfig}) {
+  void set({context, loadConfig, setStateCall}) {
     this.loadConfig = loadConfig;
     this.context = context;
     loadConfig.refreshAdapter.setOnRefreshListener(_refresh);
     loadConfig.refreshAdapter.setOnLoadMoreListener(_loadMore);
+    this.setStateCall = setStateCall;
   }
 
   Widget getWidget() {
@@ -207,6 +226,17 @@ class _LoadControllerImp<DATA> {
       buildInit();
     }
     return refreshWidget;
+  }
+
+  void rebuild() {
+    print(
+        'status :$status loadConfig.dataManager.isEmpty():${loadConfig.dataManager.isEmpty()}');
+    if (status != WidgetStatus.loading) {
+      if (!loadConfig.dataManager.isEmpty()) {
+        buildSuccessWidget();
+        setStateCall();
+      }
+    }
   }
 
   ///refreshingType 用于控制是刷新控件header显示还是，statusWidget的loading显示。或者不显示
@@ -277,13 +307,13 @@ class _LoadControllerImp<DATA> {
         case ResultCode.success:
           //通知更新数据
           loadConfig.dataManager.notifyDataChange(data, true);
-          buildSuccessWidget(true);
+          buildSuccessWidget();
           break;
         case ResultCode.fail:
-          buildErrorWidget(true, error);
+          buildErrorWidget(error);
           break;
         case ResultCode.cancel:
-          buildCancelWidget(true);
+          buildCancelWidget();
           break;
       }
       loadConfig.refreshAdapter.finishRefresh(context,
@@ -329,13 +359,13 @@ class _LoadControllerImp<DATA> {
         case ResultCode.success:
           //通知更新数据
           loadConfig.dataManager.notifyDataChange(data, false);
-          buildSuccessWidget(false);
+          buildSuccessWidget();
           break;
         case ResultCode.fail:
-          buildErrorWidget(false, error);
+          buildErrorWidget(error);
           break;
         case ResultCode.cancel:
-          buildCancelWidget(false);
+          buildCancelWidget();
           break;
       }
       loadConfig.refreshAdapter.finishLoadMore(context,
@@ -378,7 +408,7 @@ class _LoadControllerImp<DATA> {
     }
   }
 
-  void buildErrorWidget(bool isRefresh, Object error) {
+  void buildErrorWidget(Object error) {
     if (loadConfig.dataManager.isEmpty()) {
       refreshWidget = refreshWrap(
           WidgetStatus.fail,
@@ -389,7 +419,7 @@ class _LoadControllerImp<DATA> {
     }
   }
 
-  void buildCancelWidget(bool isRefresh) {
+  void buildCancelWidget() {
     if (isUnload()) {
       refreshWidget = refreshWrap(
           WidgetStatus.unload,
@@ -413,7 +443,7 @@ class _LoadControllerImp<DATA> {
     }
   }
 
-  void buildSuccessWidget(bool isRefresh) {
+  void buildSuccessWidget() {
     if (!loadConfig.dataManager.isEmpty()) {
       //数据不为空
       refreshWidget = refreshWrap(

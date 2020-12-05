@@ -44,23 +44,23 @@ class SimpleDataManager<DATA> extends DataManager<DATA> {
 }
 
 class ListDataManager<E> extends DataManager<List<E>> {
-  List<E> data = [];
+  List<E> list = [];
 
   @override
   List<E> getData() {
-    return data;
+    return list;
   }
 
   @override
   bool isEmpty() {
-    return data.isEmpty;
+    return list.isEmpty;
   }
 
   @override
   void notifyDataChange(List<E> data, bool refresh) {
     if (refresh) {
-      this.data.clear();
+      this.list.clear();
     }
-    this.data.addAll(data);
+    this.list.addAll(data);
   }
 }
