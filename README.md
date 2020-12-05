@@ -43,7 +43,7 @@
 
 	///获取列表数据
 	class BookListDataSource implements DataSource<List<Book>> {
-	  int page;
+	  int page = 0;
 	
 	  @override
 	  Future<List<Book>> refresh(CancelHandle cancelHandle, [progressCallback]){
