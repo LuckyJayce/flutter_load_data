@@ -31,18 +31,22 @@ typedef EndCallback<DATA> = void Function(
 class TaskHelper {
   List<CancelHandle> cancelHandleList = [];
 
-  void executeByFuture<DATA>(Future<DATA> future, {Callback<DATA> callback}) {
-    execute(Task.buildByFuture(future), callback: callback);
+  Future<TaskResult<DATA>> executeByFuture<DATA>(Future<DATA> future,
+      {Callback<DATA> callback}) {
+    return execute(Task.buildByFuture(future), callback: callback);
   }
 
-  void executeByFunction<DATA>(TaskFunction<DATA> taskFunction,
-      {CancelHandle cancelHandle, Callback<DATA> callback}) {
-    execute(Task.buildByFunction(taskFunction),
+  Future<TaskResult<DATA>> executeByFunction<DATA>(
+      TaskFunction<DATA> taskFunction,
+      {CancelHandle cancelHandle,
+      Callback<DATA> callback}) {
+    return execute(Task.buildByFunction(taskFunction),
         cancelHandle: cancelHandle, callback: callback);
   }
 
-  void execute<DATA>(Task<DATA> task,
-      {CancelHandle cancelHandle, Callback<DATA> callback}) {
+  Future<TaskResult<DATA>> execute<DATA>(Task<DATA> task,
+      {CancelHandle cancelHandle, Callback<DATA> callback}) async {
+    Completer<TaskResult<DATA>> completer = Completer();
     if (cancelHandle == null) {
       cancelHandle = new CancelHandle();
     }
@@ -50,11 +54,13 @@ class TaskHelper {
     Callback<DATA> removeHandleCallback =
         Callback.build<DATA>(onEnd: (ResultCode code, DATA data, Object error) {
       cancelHandleList.remove(cancelHandle);
+      completer.complete(TaskResult(code, data, error));
     });
     TaskExecutor.execute(task,
         cancelHandle: cancelHandle,
         callback: callback,
         callback2: removeHandleCallback);
+    return completer.future;
   }
 
   void cancelAll() {
@@ -284,4 +290,12 @@ class _TaskEntity<DATA> {
   CancelHandle cancelHandle;
 
   _TaskEntity(this.task, this.callback, this.cancelHandle);
+}
+
+class TaskResult<DATA> {
+  ResultCode code;
+  Object error;
+  DATA data;
+
+  TaskResult(this.code, this.error, this.data);
 }
