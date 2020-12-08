@@ -229,13 +229,9 @@ class _LoadControllerImp<DATA> {
   }
 
   void rebuild() {
-    print(
-        'status :$status loadConfig.dataManager.isEmpty():${loadConfig.dataManager.isEmpty()}');
     if (status != WidgetStatus.loading) {
-      if (!loadConfig.dataManager.isEmpty()) {
-        buildSuccessWidget();
-        setStateCall();
-      }
+      buildSuccessWidget();
+      setStateCall();
     }
   }
 
