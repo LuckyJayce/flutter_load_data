@@ -32,20 +32,19 @@ class TaskHelper {
   List<CancelHandle> cancelHandleList = [];
 
   Future<TaskResult<DATA>> executeByFuture<DATA>(Future<DATA> future,
-      {Callback<DATA> callback}) {
-    return execute(Task.buildByFuture(future), callback: callback);
+      [Callback<DATA> callback, CancelHandle cancelHandle]) {
+    return execute(Task.buildByFuture(future), callback, cancelHandle);
   }
 
   Future<TaskResult<DATA>> executeByFunction<DATA>(
       TaskFunction<DATA> taskFunction,
-      {CancelHandle cancelHandle,
-      Callback<DATA> callback}) {
-    return execute(Task.buildByFunction(taskFunction),
-        cancelHandle: cancelHandle, callback: callback);
+      [Callback<DATA> callback,
+      CancelHandle cancelHandle]) {
+    return execute(Task.buildByFunction(taskFunction), callback, cancelHandle);
   }
 
   Future<TaskResult<DATA>> execute<DATA>(Task<DATA> task,
-      {CancelHandle cancelHandle, Callback<DATA> callback}) async {
+      [Callback<DATA> callback, CancelHandle cancelHandle]) async {
     Completer<TaskResult<DATA>> completer = Completer();
     if (cancelHandle == null) {
       cancelHandle = new CancelHandle();

@@ -323,8 +323,7 @@ class _LoadControllerImp<DATA> {
       refreshCallbackList.onEnd(code, data, error);
       completer.complete();
     });
-    taskHelper.executeByFunction<DATA>(loadConfig.dataSource.refresh,
-        callback: callback);
+    taskHelper.executeByFunction<DATA>(loadConfig.dataSource.refresh, callback);
     return completer.future;
   }
 
@@ -374,8 +373,8 @@ class _LoadControllerImp<DATA> {
       loadMoreCallbackList.onEnd(code, data, error);
       completer.complete();
     });
-    taskHelper.executeByFunction<DATA>(loadConfig.dataSource.loadMore,
-        callback: callback);
+    taskHelper.executeByFunction<DATA>(
+        loadConfig.dataSource.loadMore, callback);
     return completer.future;
   }
 
