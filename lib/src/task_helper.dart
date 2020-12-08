@@ -293,9 +293,26 @@ class _TaskEntity<DATA> {
 }
 
 class TaskResult<DATA> {
-  ResultCode code;
-  Object error;
-  DATA data;
+  final ResultCode code;
+  final Object error;
+  final DATA data;
 
-  TaskResult(this.code, this.error, this.data);
+  const TaskResult(this.code, this.error, this.data);
+
+  bool isSuccessful() {
+    return code == ResultCode.success;
+  }
+
+  bool isFailed() {
+    return code == ResultCode.fail;
+  }
+
+  bool isCanceled() {
+    return code == ResultCode.cancel;
+  }
+
+  @override
+  String toString() {
+    return 'TaskResult{code: $code, error: $error, data: $data}';
+  }
 }
