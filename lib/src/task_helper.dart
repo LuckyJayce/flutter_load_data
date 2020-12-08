@@ -296,7 +296,7 @@ class TaskResult<DATA> {
   final Object error;
   final DATA data;
 
-  const TaskResult(this.code, this.error, this.data);
+  const TaskResult(this.code, this.data, this.error);
 
   bool isSuccessful() {
     return code == ResultCode.success;
