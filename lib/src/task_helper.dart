@@ -119,15 +119,16 @@ class TaskExecutor {
         } else {
           proxy.onEnd(ResultCode.cancel, data, null);
         }
-      }).catchError((error) {
+      }).catchError((error, stack) {
+        debugPrint('$error\n$stack');
         if (!cancelHandle.isCancelled) {
           proxy.onEnd(ResultCode.fail, null, error);
         } else {
           proxy.onEnd(ResultCode.cancel, null, error);
         }
       });
-    } catch (error) {
-      print('try catch error $error');
+    } catch (error, stack) {
+      debugPrint('$error\n$stack');
       proxy.onEnd(ResultCode.fail, null, error);
     }
   }
