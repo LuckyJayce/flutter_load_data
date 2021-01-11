@@ -5,6 +5,8 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 abstract class Task<DATA> {
   ///加载数据的方法
   ///cancelHandle 借鉴于dio类库的设计, 外部通过cancelHandle.cancel()取消，里面则可以通过cancelHandle.isCanceled()判断，或者通过cancelHandle.interruptedWhenCanceled()当被取消是抛出取消异常终止方法执行
@@ -19,6 +21,22 @@ abstract class Task<DATA> {
 
   static Task<DATA> buildByFuture<DATA>(Future<DATA> future) {
     return _TaskFuture<DATA>(future);
+  }
+
+  static Task<DATA> buildByData<DATA>(DATA data) {
+    return _TaskData<DATA>(data);
+  }
+}
+
+class _TaskData<DATA> implements Task<DATA> {
+  DATA data;
+
+  _TaskData(this.data);
+
+  @override
+  Future<DATA> execute(CancelHandle cancelHandle,
+      [ProgressCallback progressCallback]) {
+    return SynchronousFuture(data);
   }
 }
 
