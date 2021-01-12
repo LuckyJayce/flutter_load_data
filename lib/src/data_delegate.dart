@@ -11,13 +11,13 @@ abstract class DataDelegate<DATA> {
   Widget build(BuildContext context, DATA data);
 
   static DataDelegate<DATA> builder<DATA>(
-      Function(BuildContext context, DATA data) function) {
+      Widget Function(BuildContext context, DATA data) function) {
     return _SimpleDataDelegateImp<DATA>(function);
   }
 }
 
 class _SimpleDataDelegateImp<DATA> extends DataDelegate<DATA> {
-  Function(BuildContext context, DATA data) function;
+  Widget Function(BuildContext context, DATA data) function;
 
   _SimpleDataDelegateImp(this.function);
 
