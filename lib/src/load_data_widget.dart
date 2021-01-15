@@ -128,8 +128,8 @@ enum RefreshingType { refresh_widget, status_widget, auto, none }
 
 class LoadController<DATA> {
   _LoadControllerImp<DATA> _loadControllerImp;
-  List<Callback<DATA>> refreshCallbacks = List<Callback<DATA>>();
-  List<Callback<DATA>> loadMoreCallbacks = List<Callback<DATA>>();
+  List<Callback<DATA>> refreshCallbacks = [];
+  List<Callback<DATA>> loadMoreCallbacks = [];
 
   void _setControllerImp(_LoadControllerImp<DATA> loadControllerImp) {
     this._loadControllerImp = loadControllerImp;
