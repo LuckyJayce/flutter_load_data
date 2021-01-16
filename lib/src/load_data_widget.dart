@@ -66,11 +66,13 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   @override
   void didUpdateWidget(covariant LoadDataWidget<DATA> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.controller != null) {
-      widget.controller._setControllerImp(_loadControllerImp);
-    }
-    if (oldWidget != null && oldWidget.controller != null) {
-      oldWidget.controller._setControllerImp(null);
+    if (oldWidget.controller != widget.controller) {
+      if (widget.controller != null) {
+        widget.controller._setControllerImp(_loadControllerImp);
+      }
+      if (oldWidget.controller != null) {
+        oldWidget.controller._setControllerImp(null);
+      }
     }
     if (widget.shouldRecreate != null) {
       bool shouldRecreate = widget.shouldRecreate(context, loadConfig);
