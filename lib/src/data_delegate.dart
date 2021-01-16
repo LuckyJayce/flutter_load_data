@@ -7,8 +7,12 @@ import 'package:flutter/widgets.dart';
 
 ///数据加载成功显示的WidgetBuilder
 abstract class DataDelegate<DATA> {
+  void init() {}
+
   ///创建显示数据的Widget
   Widget build(BuildContext context, DATA data);
+
+  void dispose() {}
 
   static DataDelegate<DATA> builder<DATA>(
       Widget Function(BuildContext context, DATA data) function) {

@@ -38,6 +38,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   void initState() {
     super.initState();
     loadConfig = widget.configCreate(context, null);
+    loadConfig.dataDelegate.init();
     _loadControllerImp.set(
       context: context,
       loadConfig: loadConfig,
@@ -76,6 +77,10 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
       if (shouldRecreate) {
         LoadConfig old = loadConfig;
         loadConfig = widget.configCreate(context, old);
+        if (loadConfig.dataDelegate != old.dataDelegate) {
+          old.dataDelegate.dispose();
+          loadConfig.dataDelegate.init();
+        }
         _loadControllerImp.set(
           context: context,
           loadConfig: loadConfig,
@@ -102,6 +107,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   @override
   void dispose() {
     _loadControllerImp.dispose();
+    loadConfig.dataDelegate.dispose();
     super.dispose();
   }
 }
