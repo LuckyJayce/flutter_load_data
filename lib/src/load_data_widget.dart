@@ -557,6 +557,15 @@ class LoadConfig<DATA> {
       this.statusDelegate = const DefaultStatusDelegate(),
       this.refreshAdapter = const NoRefreshAdapter(),
       this.firstNeedRefresh = true});
+
+  LoadConfig.task(
+      {@required Task task,
+      @required this.dataManager,
+      @required this.dataDelegate,
+      this.statusDelegate = const DefaultStatusDelegate(),
+      this.refreshAdapter = const NoRefreshAdapter(),
+      this.firstNeedRefresh = true})
+      : this.dataSource = DataSource.buildByTask(task);
 }
 
 typedef ConfigCreate<DATA> = LoadConfig<DATA> Function(
