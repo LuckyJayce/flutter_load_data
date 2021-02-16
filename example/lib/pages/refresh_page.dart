@@ -107,7 +107,7 @@ class RefreshPage extends StatelessWidget {
         return LoadConfig(
           dataSource: DataSource.buildByTask(MyBookListTask(context)),
           dataDelegate: MyBookDataWidgetDelegate(),
-          dataManager: SimpleDataManager(),
+          dataManager: ListDataManager(),
           refreshAdapter: refreshAdapter,
           firstNeedRefresh: true,
         );
