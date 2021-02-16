@@ -316,3 +316,10 @@ class TaskResult<DATA> {
     return 'TaskResult{code: $code, error: $error, data: $data}';
   }
 }
+
+enum TaskStatus{
+  un_set,
+  start,
+  progress,
+  end,
+}

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:load_data/load_data.dart';
 
-class MyBookDataWidgetDelegate implements DataDelegate<List<Book>> {
+class MyBookDataWidgetDelegate extends DataDelegate<List<Book>> {
   @override
   Widget build(BuildContext context, List<Book> data) {
     print('MyBookDataWidgetBuilder $data');
@@ -12,9 +12,11 @@ class MyBookDataWidgetDelegate implements DataDelegate<List<Book>> {
     return ListView.builder(
       itemCount: data.length,
       itemBuilder: (context, i) {
+        print('ListView.builder itemBuilder:$i data:$data');
+        Book book = data[i];
         return ListTile(
-          title: Text(data[i].name),
-          subtitle: Text(data[i].content),
+          title: Text(book.name),
+          subtitle: Text(book.content),
         );
       },
     );

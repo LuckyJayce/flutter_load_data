@@ -108,6 +108,7 @@ class RefreshPage extends StatelessWidget {
           dataSource: DataSource.buildByTask(MyBookListTask(context)),
           dataDelegate: MyBookDataWidgetDelegate(),
           dataManager: SimpleDataManager(),
+          refreshAdapter: refreshAdapter,
           firstNeedRefresh: true,
         );
       },
@@ -122,6 +123,7 @@ class RefreshPage extends StatelessWidget {
           dataSource: MyBookListDataSource(context),
           dataDelegate: MyBookDataWidgetDelegate(),
           dataManager: ListDataManager(),
+          refreshAdapter: refreshAdapter,
           firstNeedRefresh: true,
         );
       },
