@@ -566,6 +566,15 @@ class LoadConfig<DATA> {
       this.refreshAdapter = const NoRefreshAdapter(),
       this.firstNeedRefresh = true})
       : this.dataSource = DataSource.buildByTask(task);
+
+  LoadConfig.future(
+      {@required Future<DATA> future,
+      @required this.dataManager,
+      @required this.dataDelegate,
+      this.statusDelegate = const DefaultStatusDelegate(),
+      this.refreshAdapter = const NoRefreshAdapter(),
+      this.firstNeedRefresh = true})
+      : this.dataSource = DataSource.buildByTask(Task.buildByFuture(future));
 }
 
 typedef ConfigCreate<DATA> = LoadConfig<DATA> Function(
