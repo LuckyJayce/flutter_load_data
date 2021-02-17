@@ -559,7 +559,7 @@ class LoadConfig<DATA> {
       this.firstNeedRefresh = true});
 
   LoadConfig.task(
-      {@required Task task,
+      {@required Task<DATA> task,
       @required this.dataManager,
       @required this.dataDelegate,
       this.statusDelegate = const DefaultStatusDelegate(),
