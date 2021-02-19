@@ -549,32 +549,36 @@ class LoadConfig<DATA> {
   final StatusDelegate statusDelegate;
   final RefreshAdapter refreshAdapter;
   final bool firstNeedRefresh;
+  static StatusDelegate defaultStatusDelegate = SimpleStatusDelegate();
 
-  const LoadConfig(
+  LoadConfig(
       {@required this.dataSource,
       @required this.dataManager,
       @required this.dataDelegate,
-      this.statusDelegate = const DefaultStatusDelegate(),
+      StatusDelegate statusDelegate,
       this.refreshAdapter = const NoRefreshAdapter(),
-      this.firstNeedRefresh = true});
+      this.firstNeedRefresh = true})
+      : this.statusDelegate = statusDelegate ?? defaultStatusDelegate;
 
   LoadConfig.task(
       {@required Task<DATA> task,
       @required this.dataManager,
       @required this.dataDelegate,
-      this.statusDelegate = const DefaultStatusDelegate(),
+      StatusDelegate statusDelegate,
       this.refreshAdapter = const NoRefreshAdapter(),
       this.firstNeedRefresh = true})
-      : this.dataSource = DataSource.buildByTask(task);
+      : this.dataSource = DataSource.buildByTask(task),
+        this.statusDelegate = statusDelegate ?? defaultStatusDelegate;
 
   LoadConfig.future(
       {@required Future<DATA> future,
       @required this.dataManager,
       @required this.dataDelegate,
-      this.statusDelegate = const DefaultStatusDelegate(),
+      StatusDelegate statusDelegate,
       this.refreshAdapter = const NoRefreshAdapter(),
       this.firstNeedRefresh = true})
-      : this.dataSource = DataSource.buildByTask(Task.buildByFuture(future));
+      : this.dataSource = DataSource.buildByTask(Task.buildByFuture(future)),
+        this.statusDelegate = statusDelegate ?? defaultStatusDelegate;
 }
 
 typedef ConfigCreate<DATA> = LoadConfig<DATA> Function(
