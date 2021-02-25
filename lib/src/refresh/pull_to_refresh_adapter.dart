@@ -16,9 +16,15 @@ class PullToRefreshAdapter implements RefreshAdapter {
   RefreshController _controller = RefreshController(initialRefresh: false);
   bool enableLoadMore;
   bool enableRefresh;
+  WidgetBuilder headerBuilder;
+  WidgetBuilder footerBuilder;
 
-  PullToRefreshAdapter(
-      {this.enableLoadMore = true, this.enableRefresh = true});
+  PullToRefreshAdapter({
+    this.enableLoadMore = true,
+    this.enableRefresh = true,
+    this.headerBuilder,
+    this.footerBuilder,
+  });
 
   @override
   void setOnRefreshListener(VoidCallback onRefresh) {
@@ -50,7 +56,8 @@ class PullToRefreshAdapter implements RefreshAdapter {
     bool enableLoadMore = this.enableLoadMore && status == WidgetStatus.normal;
     return SmartRefresher(
       // 定制header。如果想全局配置默认的header通过 RefreshConfiguration配置（按照InheritedWidget的用法配置），或者新类也可以继承重写该方法
-      // header: WaterDropHeader(),
+      header: headerBuilder == null ? null : headerBuilder(context),
+      footer: footerBuilder == null ? null : footerBuilder(context),
       enablePullDown: enableRefresh,
       enablePullUp: enableLoadMore,
       onRefresh: onRefresh,

@@ -1,4 +1,5 @@
 import 'package:example/pages/append_data_page.dart';
+import 'package:example/pages/horizontal_listview_page.dart';
 
 import 'load_config_recreate_page.dart';
 import 'no_refresh_page.dart';
@@ -21,5 +22,6 @@ class HomePage extends AbstractDemosPage {
           '/no refresh widget': (context) => NoRefreshPage(),
           '/LoadConfigRecreatePage': (context) => LoadConfigRecreatePage(),
           '/AppendDataRefreshPage': (context) => AppendDataRefreshPage(),
+          '/HorizontalListViewPage': (context) => HorizontalListViewPage(),
         });
 }

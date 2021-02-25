@@ -17,8 +17,15 @@ class EasyRefreshAdapter implements RefreshAdapter {
   bool enableLoadMore;
   bool enableRefresh;
 
-  EasyRefreshAdapter(
-      {this.enableLoadMore = true, this.enableRefresh = true});
+  Header Function(BuildContext context) headerBuilder;
+  Footer Function(BuildContext context) footerBuilder;
+
+  EasyRefreshAdapter({
+    this.enableLoadMore = true,
+    this.enableRefresh = true,
+    this.headerBuilder,
+    this.footerBuilder,
+  });
 
   @override
   void setOnRefreshListener(VoidCallback onRefresh) {
@@ -51,6 +58,8 @@ class EasyRefreshAdapter implements RefreshAdapter {
     return EasyRefresh(
       //定制header。如果想全局设置header可以通过  EasyRefresh.defaultHeader = MaterialHeader();设置，或者新类也可以继承重写该方法
       // header: MaterialHeader(),
+      header: headerBuilder == null ? null : headerBuilder(context),
+      footer: footerBuilder == null ? null : footerBuilder(context),
       onRefresh: enableRefresh ? onRefresh : null,
       onLoad: enableLoadMore ? onLoadMore : null,
       emptyWidget: statusWidget,
