@@ -2,8 +2,7 @@
     Author: Jayce
     createTime:2020-10
 */
-
-import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter/widgets.dart';
 
 import '../load_data_widget.dart';
 import '../refresh_adapter.dart';
@@ -16,14 +15,6 @@ class NoRefreshAdapter extends RefreshAdapter {
 
   @override
   bool get enableRefresh => false;
-
-  @override
-  void finishLoadMore(
-      BuildContext context, bool success, Object error, bool noMore) {}
-
-  @override
-  void finishRefresh(
-      BuildContext context, bool success, Object error, bool noMore) {}
 
   @override
   void requestLoadMore() {}
@@ -39,10 +30,18 @@ class NoRefreshAdapter extends RefreshAdapter {
 
   @override
   Widget wrapChild(BuildContext context, WidgetStatus status,
-      Widget statusWidget, Widget contentWidget) {
+      Widget? statusWidget, Widget? contentWidget) {
     if (status == WidgetStatus.normal) {
-      return contentWidget;
+      return contentWidget!;
     }
-    return statusWidget;
+    return statusWidget!;
   }
+
+  @override
+  void finishLoadMore(
+      BuildContext context, bool success, Object? error, bool noMore) {}
+
+  @override
+  void finishRefresh(
+      BuildContext context, bool success, Object? error, bool noMore) {}
 }

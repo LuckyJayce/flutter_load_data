@@ -8,11 +8,11 @@ import 'package:flutter/widgets.dart';
 
 ///状态布局widgetBuilder
 abstract class StatusDelegate {
-  Widget buildUnLoadWidget(BuildContext context, [VoidCallback refreshToken]);
+  Widget buildUnLoadWidget(BuildContext context, [VoidCallback? refreshToken]);
 
   /// 显示加载中
   Widget buildLoadingWidget(
-      BuildContext context, int current, int total, Object progressData);
+      BuildContext context, int current, int total, Object? progressData);
 
   /// 显示加载失败
   /// @param error
@@ -22,19 +22,20 @@ abstract class StatusDelegate {
 
   /// 显示空数据布局
   /// @param refreshToken 可以用于widget点击事件重新刷新
-  Widget buildEmptyWidget(BuildContext context, [VoidCallback refreshToken]);
+  Widget buildEmptyWidget(BuildContext context, [VoidCallback? refreshToken]);
 
   /// 有数据的时候，toast提示失败
   /// @param error
   /// @param refreshToken 可以用于widget点击事件重新刷新
-  void tipFail(BuildContext context, Object error, [VoidCallback refreshToken]);
+  void tipFail(BuildContext context, Object error,
+      [VoidCallback? refreshToken]);
 }
 
 class SimpleStatusDelegate implements StatusDelegate {
   const SimpleStatusDelegate();
 
   @override
-  Widget buildUnLoadWidget(BuildContext context, [VoidCallback refreshToken]) {
+  Widget buildUnLoadWidget(BuildContext context, [VoidCallback? refreshToken]) {
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -46,8 +47,7 @@ class SimpleStatusDelegate implements StatusDelegate {
           Text('unload'),
           refreshToken == null
               ? Container()
-              : FlatButton(
-                  color: Colors.blue,
+              : TextButton(
                   child: Text('refresh'),
                   onPressed: refreshToken,
                 )
@@ -58,9 +58,9 @@ class SimpleStatusDelegate implements StatusDelegate {
 
   @override
   Widget buildLoadingWidget(
-      BuildContext context, int current, int total, Object progressData) {
+      BuildContext context, int current, int total, Object? progressData) {
     String text;
-    if (total != null && current != null && total > 0) {
+    if (total > 0) {
       double progress = current * 100 / total;
       if (progressData != null) {
         text = '$progress% $progressData';
@@ -90,7 +90,7 @@ class SimpleStatusDelegate implements StatusDelegate {
   }
 
   @override
-  Widget buildEmptyWidget(BuildContext context, [VoidCallback refreshToken]) {
+  Widget buildEmptyWidget(BuildContext context, [VoidCallback? refreshToken]) {
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -102,8 +102,7 @@ class SimpleStatusDelegate implements StatusDelegate {
           Text('Empty'),
           refreshToken == null
               ? Container()
-              : FlatButton(
-                  color: Colors.blue,
+              : TextButton(
                   child: Text('refresh'),
                   onPressed: refreshToken,
                 )
@@ -114,7 +113,7 @@ class SimpleStatusDelegate implements StatusDelegate {
 
   @override
   Widget buildFailWidget(BuildContext context, Object error,
-      [VoidCallback refreshToken]) {
+      [VoidCallback? refreshToken]) {
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -126,8 +125,7 @@ class SimpleStatusDelegate implements StatusDelegate {
           Text('error:$error'),
           refreshToken == null
               ? Container()
-              : FlatButton(
-                  color: Colors.blue,
+              : TextButton(
                   child: Text('refresh'),
                   onPressed: refreshToken,
                 )
@@ -138,8 +136,8 @@ class SimpleStatusDelegate implements StatusDelegate {
 
   @override
   void tipFail(BuildContext context, Object error,
-      [VoidCallback refreshToken]) {
-    Scaffold.of(context).showSnackBar(SnackBar(
+      [VoidCallback? refreshToken]) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('error$error'),
     ));
   }

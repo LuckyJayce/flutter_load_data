@@ -12,11 +12,11 @@ abstract class DataSource<DATA> {
   ///progressCallback，可能为空使用前判空，用于通知外部进度
   ///Future<DATA> 返回数据的Future
   Future<DATA> refresh(CancelHandle cancelHandle,
-      [ProgressCallback progressCallback]);
+      [ProgressCallback? progressCallback]);
 
   ///加载更多 触发加载刷新的数据，一般用于列表加载下一页数据
   Future<DATA> loadMore(CancelHandle cancelHandle,
-      [ProgressCallback progressCallback]);
+      [ProgressCallback? progressCallback]);
 
   ///是否有更多数据，是否有下一页数据
   bool hasMore();
@@ -38,7 +38,7 @@ class _TaskDataSource<DATA> implements DataSource<DATA> {
 
   @override
   Future<DATA> loadMore(CancelHandle cancelHandle, [progressCallback]) {
-    return null;
+    throw UnimplementedError();
   }
 
   @override

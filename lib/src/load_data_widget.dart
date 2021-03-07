@@ -14,13 +14,13 @@ import 'refresh_adapter.dart';
 import 'status_delegate.dart';
 
 class LoadDataWidget<DATA> extends StatefulWidget {
-  final LoadController<DATA> controller;
+  final LoadController<DATA>? controller;
   final ConfigCreate<DATA> configCreate;
-  final ShouldRecreate<DATA> shouldRecreate;
+  final ShouldRecreate<DATA>? shouldRecreate;
 
   LoadDataWidget({
     this.controller, //用于外部手动调用refresh，loadMore，addCallback，cancel等功能
-    @required this.configCreate, //加载成功数据的widgetBuilder
+    required this.configCreate, //加载成功数据的widgetBuilder
     this.shouldRecreate, //加载成功数据的widgetBuilder
   });
 
@@ -32,15 +32,15 @@ class LoadDataWidget<DATA> extends StatefulWidget {
 
 class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   _LoadControllerImp<DATA> _loadControllerImp = _LoadControllerImp<DATA>();
-  LoadConfig<DATA> loadConfig;
+  late LoadConfig<DATA> loadConfig;
 
   TaskStatus taskStatus = TaskStatus.un_set;
-  int current;
-  int total;
-  Object error;
-  ResultCode resultCode;
-  Object progressData;
-  Widget contentWidget;
+  late int current;
+  late int total;
+  Object? error;
+  ResultCode? resultCode;
+  Object? progressData;
+  Widget? contentWidget;
 
   @override
   void initState() {
@@ -55,22 +55,22 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
       },
     );
     if (widget.controller != null) {
-      widget.controller._setControllerImp(_loadControllerImp);
+      widget.controller!._setControllerImp(_loadControllerImp);
     }
     Callback<DATA> callback = Callback.build<DATA>(onStart: () {
       setState(() {
         taskStatus = TaskStatus.start;
-        current = null;
-        total = null;
+        current = 0;
+        total = 0;
       });
-    }, onProgress: (int current, int total, [Object progressData]) {
+    }, onProgress: (int current, int total, [Object? progressData]) {
       setState(() {
         this.current = current;
         this.total = total;
         this.progressData = progressData;
         this.taskStatus = TaskStatus.progress;
       });
-    }, onEnd: (ResultCode code, DATA data, Object error) {
+    }, onEnd: (ResultCode code, DATA? data, Object? error) {
       setState(() {
         this.error = error;
         this.resultCode = code;
@@ -89,17 +89,17 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       if (widget.controller != null) {
-        widget.controller._setControllerImp(_loadControllerImp);
+        widget.controller!._setControllerImp(_loadControllerImp);
       }
       if (oldWidget.controller != null) {
-        oldWidget.controller._setControllerImp(null);
+        oldWidget.controller!._setControllerImp(null);
       }
     }
     if (widget.shouldRecreate != null) {
-      bool shouldRecreate = widget.shouldRecreate(context, loadConfig);
+      bool shouldRecreate = widget.shouldRecreate!(context, loadConfig);
       if (shouldRecreate) {
-        LoadConfig old = loadConfig;
-        loadConfig = widget.configCreate(context, old);
+        LoadConfig? old = loadConfig;
+        loadConfig = widget.configCreate(context, old as LoadConfig<DATA>?);
         if (loadConfig.dataDelegate != old.dataDelegate) {
           old.dataDelegate.dispose();
           loadConfig.dataDelegate.init();
@@ -124,7 +124,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
 
   @override
   Widget build(BuildContext context) {
-    Widget widget;
+    Widget? widget;
     bool isRefresh = _loadControllerImp.isRefreshing;
     bool showLoadingWidget = _loadControllerImp.showLoadingWidget;
     switch (taskStatus) {
@@ -139,12 +139,12 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
             isRefresh, showLoadingWidget, current, total, progressData);
         break;
       case TaskStatus.end:
-        switch (resultCode) {
+        switch (resultCode!) {
           case ResultCode.success:
             widget = buildSuccessWidget();
             break;
           case ResultCode.fail:
-            widget = buildErrorWidget(error);
+            widget = buildErrorWidget(error!);
             break;
           case ResultCode.cancel:
             widget = buildCancelWidget();
@@ -175,7 +175,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     return refreshWrap(WidgetStatus.normal, null);
   }
 
-  Widget buildErrorWidget(Object error) {
+  Widget? buildErrorWidget(Object error) {
     if (loadConfig.dataManager.isEmpty()) {
       return refreshWrap(
           WidgetStatus.fail,
@@ -185,7 +185,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     return null;
   }
 
-  Widget buildCancelWidget() {
+  Widget? buildCancelWidget() {
     if (isUnload()) {
       return refreshWrap(
           WidgetStatus.unload,
@@ -194,9 +194,9 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     }
     if (loadConfig.dataManager.isEmpty()) {
       return refreshWrap(
-          WidgetStatus.fail,
+          WidgetStatus.empty,
           loadConfig.statusDelegate
-              .buildFailWidget(context, null, _loadControllerImp.refresh));
+              .buildEmptyWidget(context, _loadControllerImp.refresh));
     }
     return null;
   }
@@ -205,10 +205,10 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     return loadConfig.dataManager.getData() == null;
   }
 
-  Widget buildSuccessWidget() {
+  Widget? buildSuccessWidget() {
     if (!loadConfig.dataManager.isEmpty()) {
       contentWidget = loadConfig.dataDelegate
-          .build(context, loadConfig.dataManager.getData());
+          .build(context, loadConfig.dataManager.getData()!);
       //数据不为空
       return refreshWrap(WidgetStatus.normal, null);
     }
@@ -220,18 +220,16 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
             .buildEmptyWidget(context, _loadControllerImp.refresh));
   }
 
-  Widget buildLoadStart(bool isRefresh, bool showLoadingWidget) {
+  Widget? buildLoadStart(bool isRefresh, bool showLoadingWidget) {
     if (showLoadingWidget) {
-      return refreshWrap(
-          WidgetStatus.loading,
-          loadConfig.statusDelegate
-              .buildLoadingWidget(context, null, null, null));
+      return refreshWrap(WidgetStatus.loading,
+          loadConfig.statusDelegate.buildLoadingWidget(context, -1, -1, null));
     }
     return null;
   }
 
-  Widget buildProgress(bool isRefresh, bool showLoadingWidget, int current,
-      total, Object progressData) {
+  Widget? buildProgress(bool isRefresh, bool showLoadingWidget, int current,
+      total, Object? progressData) {
     if (showLoadingWidget) {
       return refreshWrap(
           WidgetStatus.loading,
@@ -241,16 +239,13 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     return null;
   }
 
-  Widget refreshWrap(WidgetStatus status, Widget statusWidget) {
+  Widget refreshWrap(WidgetStatus status, Widget? statusWidget) {
     if (contentWidget == null && loadConfig.dataManager.getData() != null) {
       contentWidget = loadConfig.dataDelegate
-          .build(context, loadConfig.dataManager.getData());
+          .build(context, loadConfig.dataManager.getData()!);
     }
-    if (loadConfig.refreshAdapter != null) {
-      return loadConfig.refreshAdapter
-          .wrapChild(context, status, statusWidget, contentWidget);
-    }
-    return status == WidgetStatus.normal ? contentWidget : statusWidget;
+    return loadConfig.refreshAdapter
+        .wrapChild(context, status, statusWidget, contentWidget);
   }
 }
 
@@ -275,14 +270,14 @@ enum WidgetStatus {
 enum RefreshingType { refresh_widget, status_widget, auto, none }
 
 class LoadController<DATA> {
-  _LoadControllerImp<DATA> _loadControllerImp;
+  _LoadControllerImp<DATA>? _loadControllerImp;
   List<Callback<DATA>> refreshCallbacks = [];
   List<Callback<DATA>> loadMoreCallbacks = [];
 
-  void _setControllerImp(_LoadControllerImp<DATA> loadControllerImp) {
+  void _setControllerImp(_LoadControllerImp<DATA>? loadControllerImp) {
     this._loadControllerImp = loadControllerImp;
-    if (_loadControllerImp != null) {
-      _loadControllerImp.refreshCallbackList.callbacks.addAll(refreshCallbacks);
+    if (loadControllerImp != null) {
+      loadControllerImp.refreshCallbackList.callbacks.addAll(refreshCallbacks);
       refreshCallbacks.clear();
     }
   }
@@ -291,12 +286,12 @@ class LoadController<DATA> {
     _loadControllerImp?.rebuild();
   }
 
-  DATA getData() {
-    return _loadControllerImp?.loadConfig?.dataManager?.getData();
+  DATA? getData() {
+    return _loadControllerImp?.loadConfig.dataManager.getData();
   }
 
-  DataManager<DATA> getDataManager() {
-    return _loadControllerImp?.loadConfig?.dataManager;
+  DataManager<DATA>? getDataManager() {
+    return _loadControllerImp?.loadConfig.dataManager;
   }
 
   void refresh({RefreshingType refreshingType = RefreshingType.auto}) {
@@ -340,18 +335,19 @@ class LoadController<DATA> {
   }
 
   bool isLoading() {
-    return _loadControllerImp?.isLoading();
+    return _loadControllerImp?.isLoading() ?? false;
   }
 }
 
 class _LoadControllerImp<DATA> {
-  BuildContext context;
-  LoadConfig<DATA> loadConfig;
+  late BuildContext context;
+  late LoadConfig<DATA> loadConfig;
+  late VoidCallback setStateCall;
 
-  Widget contentWidget;
-  Widget statusWidget;
-  Widget refreshWidget;
-  WidgetStatus status;
+  Widget? contentWidget;
+  Widget? statusWidget;
+  Widget? refreshWidget;
+  WidgetStatus? status;
 
   CallbackList<DATA> refreshCallbackList = CallbackList<DATA>();
   CallbackList<DATA> loadMoreCallbackList = CallbackList<DATA>();
@@ -360,7 +356,6 @@ class _LoadControllerImp<DATA> {
   bool isLoadMoreIng = false;
   bool showLoadingWidget = false;
   final TaskHelper taskHelper = TaskHelper();
-  VoidCallback setStateCall;
 
   void set({context, loadConfig, setStateCall}) {
     this.loadConfig = loadConfig;
@@ -386,8 +381,7 @@ class _LoadControllerImp<DATA> {
         _refresh(showLoadingWidget: true);
         break;
       case RefreshingType.auto:
-        if (loadConfig.refreshAdapter != null &&
-            loadConfig.refreshAdapter.enableRefresh) {
+        if (loadConfig.refreshAdapter.enableRefresh) {
           if (loadConfig.dataManager.isEmpty()) {
             _refresh(showLoadingWidget: true);
           } else {
@@ -433,18 +427,18 @@ class _LoadControllerImp<DATA> {
 
     Callback<DATA> callback = Callback.build<DATA>(onStart: () {
       refreshCallbackList.onStart();
-    }, onProgress: (int current, int total, [Object progressData]) {
+    }, onProgress: (int current, int total, [Object? progressData]) {
       refreshCallbackList.onProgress(current, total, progressData);
-    }, onEnd: (ResultCode code, DATA data, Object error) {
+    }, onEnd: (ResultCode code, DATA? data, Object? error) {
       //end ----------
       switch (code) {
         case ResultCode.success:
           //通知更新数据
-          loadConfig.dataManager.notifyDataChange(data, true);
+          loadConfig.dataManager.notifyDataChange(data!, true);
           break;
         case ResultCode.fail:
           if (!loadConfig.dataManager.isEmpty()) {
-            loadConfig.statusDelegate.tipFail(context, error, refresh);
+            loadConfig.statusDelegate.tipFail(context, error!, refresh);
           }
           break;
         case ResultCode.cancel:
@@ -481,18 +475,18 @@ class _LoadControllerImp<DATA> {
 
     Callback<DATA> callback = Callback.build<DATA>(onStart: () {
       loadMoreCallbackList.onStart();
-    }, onProgress: (int current, int total, [Object progressData]) {
+    }, onProgress: (int current, int total, [Object? progressData]) {
       loadMoreCallbackList.onProgress(current, total, progressData);
-    }, onEnd: (ResultCode code, DATA data, Object error) {
+    }, onEnd: (ResultCode code, DATA? data, Object? error) {
       //end ----------
       switch (code) {
         case ResultCode.success:
           //通知更新数据
-          loadConfig.dataManager.notifyDataChange(data, false);
+          loadConfig.dataManager.notifyDataChange(data!, false);
           break;
         case ResultCode.fail:
           if (!loadConfig.dataManager.isEmpty()) {
-            loadConfig.statusDelegate.tipFail(context, error, refresh);
+            loadConfig.statusDelegate.tipFail(context, error!, refresh);
           }
           break;
         case ResultCode.cancel:
@@ -552,29 +546,29 @@ class LoadConfig<DATA> {
   static StatusDelegate defaultStatusDelegate = SimpleStatusDelegate();
 
   LoadConfig(
-      {@required this.dataSource,
-      @required this.dataManager,
-      @required this.dataDelegate,
-      StatusDelegate statusDelegate,
+      {required this.dataSource,
+      required this.dataManager,
+      required this.dataDelegate,
+      StatusDelegate? statusDelegate,
       this.refreshAdapter = const NoRefreshAdapter(),
       this.firstNeedRefresh = true})
       : this.statusDelegate = statusDelegate ?? defaultStatusDelegate;
 
   LoadConfig.task(
-      {@required Task<DATA> task,
-      @required this.dataManager,
-      @required this.dataDelegate,
-      StatusDelegate statusDelegate,
+      {required Task<DATA> task,
+      required this.dataManager,
+      required this.dataDelegate,
+      StatusDelegate? statusDelegate,
       this.refreshAdapter = const NoRefreshAdapter(),
       this.firstNeedRefresh = true})
       : this.dataSource = DataSource.buildByTask(task),
         this.statusDelegate = statusDelegate ?? defaultStatusDelegate;
 
   LoadConfig.future(
-      {@required Future<DATA> future,
-      @required this.dataManager,
-      @required this.dataDelegate,
-      StatusDelegate statusDelegate,
+      {required Future<DATA> future,
+      required this.dataManager,
+      required this.dataDelegate,
+      StatusDelegate? statusDelegate,
       this.refreshAdapter = const NoRefreshAdapter(),
       this.firstNeedRefresh = true})
       : this.dataSource = DataSource.buildByTask(Task.buildByFuture(future)),
@@ -582,7 +576,7 @@ class LoadConfig<DATA> {
 }
 
 typedef ConfigCreate<DATA> = LoadConfig<DATA> Function(
-    BuildContext context, LoadConfig<DATA> oldConfig);
+    BuildContext context, LoadConfig<DATA>? oldConfig);
 
 typedef ShouldRecreate<DATA> = bool Function(
     BuildContext context, LoadConfig<DATA> config);

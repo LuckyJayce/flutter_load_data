@@ -11,13 +11,13 @@ import '../refresh_adapter.dart';
 
 //适配 https://github.com/peng8350/flutter_pulltorefresh 刷新控件
 class PullToRefreshAdapter implements RefreshAdapter {
-  VoidCallback onRefresh;
-  VoidCallback onLoadMore;
+  VoidCallback? onRefresh;
+  VoidCallback? onLoadMore;
   RefreshController _controller = RefreshController(initialRefresh: false);
   bool enableLoadMore;
   bool enableRefresh;
-  WidgetBuilder headerBuilder;
-  WidgetBuilder footerBuilder;
+  WidgetBuilder? headerBuilder;
+  WidgetBuilder? footerBuilder;
 
   PullToRefreshAdapter({
     this.enableLoadMore = true,
@@ -38,26 +38,30 @@ class PullToRefreshAdapter implements RefreshAdapter {
 
   @override
   void requestLoadMore() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _controller.requestLoading();
-    });
+    if (WidgetsBinding.instance != null) {
+      WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+        _controller.requestLoading();
+      });
+    }
   }
 
   @override
   void requestRefresh() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _controller.requestRefresh();
-    });
+    if (WidgetsBinding.instance != null) {
+      WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+        _controller.requestRefresh();
+      });
+    }
   }
 
   @override
   Widget wrapChild(BuildContext context, WidgetStatus status,
-      Widget statusWidget, Widget contentWidget) {
+      Widget? statusWidget, Widget? contentWidget) {
     bool enableLoadMore = this.enableLoadMore && status == WidgetStatus.normal;
     return SmartRefresher(
       // 定制header。如果想全局配置默认的header通过 RefreshConfiguration配置（按照InheritedWidget的用法配置），或者新类也可以继承重写该方法
-      header: headerBuilder == null ? null : headerBuilder(context),
-      footer: footerBuilder == null ? null : footerBuilder(context),
+      header: headerBuilder == null ? null : headerBuilder!(context),
+      footer: footerBuilder == null ? null : footerBuilder!(context),
       enablePullDown: enableRefresh,
       enablePullUp: enableLoadMore,
       onRefresh: onRefresh,
@@ -69,7 +73,7 @@ class PullToRefreshAdapter implements RefreshAdapter {
 
   @override
   void finishRefresh(
-      BuildContext context, bool success, Object error, bool noMore) {
+      BuildContext context, bool success, Object? error, bool noMore) {
     if (_controller.isRefresh) {
       if (success) {
         _controller.refreshCompleted();
@@ -86,7 +90,7 @@ class PullToRefreshAdapter implements RefreshAdapter {
 
   @override
   void finishLoadMore(
-      BuildContext context, bool success, Object error, bool noMore) {
+      BuildContext context, bool success, Object? error, bool noMore) {
     if (noMore) {
       _controller.loadNoData();
     } else if (success) {

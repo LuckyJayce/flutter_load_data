@@ -12,7 +12,7 @@ abstract class RefreshAdapter {
   const RefreshAdapter();
 
   Widget wrapChild(BuildContext context, WidgetStatus status,
-      Widget statusWidget, Widget contentWidget);
+      Widget? statusWidget, Widget? contentWidget);
 
   void requestRefresh();
 
@@ -23,10 +23,10 @@ abstract class RefreshAdapter {
   void setOnLoadMoreListener(VoidCallback loadMoreFutureCallback);
 
   void finishRefresh(
-      BuildContext context, bool success, Object error, bool noMore);
+      BuildContext context, bool success, Object? error, bool noMore);
 
   void finishLoadMore(
-      BuildContext context, bool success, Object error, bool noMore);
+      BuildContext context, bool success, Object? error, bool noMore);
 
   bool get enableLoadMore;
 

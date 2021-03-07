@@ -41,14 +41,14 @@ abstract class DataManager<DATA> {
   bool isEmpty();
 
   ///提供外部最终的data
-  DATA getData();
+  DATA? getData();
 }
 
 class SimpleDataManager<DATA> extends DataManager<DATA> {
-  DATA data;
+  DATA? data;
 
   @override
-  DATA getData() {
+  DATA? getData() {
     return data;
   }
 

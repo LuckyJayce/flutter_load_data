@@ -13,7 +13,7 @@ abstract class Task<DATA> {
   ///progressCallback，可能为空使用前判空，用于通知外部进度
   ///Future<DATA> 返回数据的Future
   Future<DATA> execute(CancelHandle cancelHandle,
-      [ProgressCallback progressCallback]);
+      [ProgressCallback? progressCallback]);
 
   static Task<DATA> buildByFunction<DATA>(TaskFunction<DATA> function) {
     return _TaskF<DATA>(function);
@@ -35,7 +35,7 @@ class _TaskData<DATA> implements Task<DATA> {
 
   @override
   Future<DATA> execute(CancelHandle cancelHandle,
-      [ProgressCallback progressCallback]) {
+      [ProgressCallback? progressCallback]) {
     return SynchronousFuture(data);
   }
 }
@@ -47,7 +47,7 @@ class _TaskFuture<DATA> implements Task<DATA> {
 
   @override
   Future<DATA> execute(CancelHandle cancelHandle,
-      [ProgressCallback progressCallback]) {
+      [ProgressCallback? progressCallback]) {
     return future;
   }
 }
@@ -59,28 +59,24 @@ class _TaskF<DATA> implements Task<DATA> {
 
   @override
   Future<DATA> execute(CancelHandle cancelHandle,
-      [ProgressCallback progressCallback]) {
+      [ProgressCallback? progressCallback]) {
     return task(cancelHandle, progressCallback);
   }
 }
 
 typedef ProgressCallback = void Function(int current, int total,
-    [Object progressData]);
+    [Object? progressData]);
 
 ///用于取消的句柄，借鉴于dio CancelToken
 class CancelHandle {
-  CancelHandle() {
-    _completer = Completer();
-  }
+  final Completer _completer = Completer();
 
-  Completer _completer;
-
-  CancelException _cancelException;
+  CancelException? _cancelException;
 
   ///当被取消是抛出取消异常终止方法执行，用该方法注释资源释放等问题
   void interruptedWhenCanceled() {
     if (isCancelled) {
-      throw _cancelException;
+      throw _cancelException!;
     }
   }
 
@@ -105,4 +101,4 @@ class CancelHandle {
 class CancelException implements Exception {}
 
 typedef TaskFunction<DATA> = Future<DATA> Function(CancelHandle cancelHandle,
-    [ProgressCallback progressCallback]);
+    [ProgressCallback? progressCallback]);
