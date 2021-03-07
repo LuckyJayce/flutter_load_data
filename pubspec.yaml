@@ -16,7 +16,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_easyrefresh: ^2.1.6
-  pull_to_refresh: ^1.6.1
+  pull_to_refresh: ^1.6.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
