@@ -33,7 +33,8 @@ class AppendDataRefreshPage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: Text('add'),
         onPressed: () {
-          MyListDataManager<Book> manager = controller.getDataManager();
+          MyListDataManager<Book> manager =
+              controller.getDataManager() as MyListDataManager<Book>;
           manager
               .addTop(Book('1111', '${DateTime.now().millisecondsSinceEpoch}'));
           controller.rebuild();

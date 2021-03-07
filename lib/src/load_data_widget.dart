@@ -60,8 +60,8 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     Callback<DATA> callback = Callback.build<DATA>(onStart: () {
       setState(() {
         taskStatus = TaskStatus.start;
-        current = 0;
-        total = 0;
+        current = -1;
+        total = -1;
       });
     }, onProgress: (int current, int total, [Object? progressData]) {
       setState(() {

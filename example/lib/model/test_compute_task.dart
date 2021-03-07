@@ -26,7 +26,7 @@ class TestComputeTask extends Task<int> {
     //一个task 可以通过这个方式组合多个task
     int num = await GetCodeTask().execute(cancelHandle);
     int num2 = await GetNumTask().execute(cancelHandle, (int current, int total,
-        [Object progressData]) {
+        [Object? progressData]) {
       print(
           'MyBookBackgroundTask2 progress current:$current progressData:$progressData');
       if (progressCallback != null) {

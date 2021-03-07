@@ -33,7 +33,8 @@ class _LoadConfigRecreatePageState extends State<LoadConfigRecreatePage> {
           );
         },
         shouldRecreate: (context, config) {
-          BookListDataSource bookListDataSource = config.dataSource;
+          BookListDataSource bookListDataSource =
+              config.dataSource as BookListDataSource;
           return bookListDataSource.name != name;
         },
       ),
