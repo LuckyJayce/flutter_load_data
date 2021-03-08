@@ -18,7 +18,7 @@ abstract class StatusDelegate {
   /// @param error
   /// @param refreshToken 可以用于widget点击事件重新刷新
   Widget buildFailWidget(BuildContext context, Object error,
-      [VoidCallback refreshToken]);
+      [VoidCallback? refreshToken]);
 
   /// 显示空数据布局
   /// @param refreshToken 可以用于widget点击事件重新刷新
