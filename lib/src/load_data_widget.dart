@@ -5,9 +5,9 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../load_data.dart';
 import 'data_source.dart';
 import 'data_delegate.dart';
+import 'task.dart';
 import 'task_helper.dart';
 import 'refresh/no_refresh_adapter.dart';
 import 'refresh_adapter.dart';
