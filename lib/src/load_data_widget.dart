@@ -434,7 +434,9 @@ class _LoadControllerImp<DATA> {
       switch (code) {
         case ResultCode.success:
           //通知更新数据
-          loadConfig.dataManager.notifyDataChange(data!, true);
+          if (data != null) {
+            loadConfig.dataManager.notifyDataChange(data, true);
+          }
           break;
         case ResultCode.fail:
           if (!loadConfig.dataManager.isEmpty()) {
@@ -482,7 +484,9 @@ class _LoadControllerImp<DATA> {
       switch (code) {
         case ResultCode.success:
           //通知更新数据
-          loadConfig.dataManager.notifyDataChange(data!, false);
+          if (data != null) {
+            loadConfig.dataManager.notifyDataChange(data, false);
+          }
           break;
         case ResultCode.fail:
           if (!loadConfig.dataManager.isEmpty()) {
