@@ -37,20 +37,13 @@ class SimpleStatusDelegate implements StatusDelegate {
   @override
   Widget buildUnLoadWidget(BuildContext context, [VoidCallback? refreshToken]) {
     return Container(
-      width: double.infinity,
-      height: double.infinity,
       alignment: Alignment.center,
       decoration: BoxDecoration(color: Color(0xFFEEEEEE)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text('unload'),
-          refreshToken == null
-              ? Container()
-              : TextButton(
-                  child: Text('refresh'),
-                  onPressed: refreshToken,
-                )
+          _buildRefreshButton(refreshToken),
         ],
       ),
     );
@@ -92,20 +85,14 @@ class SimpleStatusDelegate implements StatusDelegate {
   @override
   Widget buildEmptyWidget(BuildContext context, [VoidCallback? refreshToken]) {
     return Container(
-      width: double.infinity,
-      height: double.infinity,
       alignment: Alignment.center,
       decoration: BoxDecoration(color: Color(0xFFEEEEEE)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text('Empty'),
-          refreshToken == null
-              ? Container()
-              : TextButton(
-                  child: Text('refresh'),
-                  onPressed: refreshToken,
-                )
+          SizedBox(height: 24),
+          _buildRefreshButton(refreshToken),
         ],
       ),
     );
@@ -123,12 +110,7 @@ class SimpleStatusDelegate implements StatusDelegate {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text('error:$error'),
-          refreshToken == null
-              ? Container()
-              : TextButton(
-                  child: Text('refresh'),
-                  onPressed: refreshToken,
-                )
+          _buildRefreshButton(refreshToken),
         ],
       ),
     );
@@ -140,5 +122,21 @@ class SimpleStatusDelegate implements StatusDelegate {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('error$error'),
     ));
+  }
+
+  Widget _buildRefreshButton(VoidCallback? refreshToken) {
+    return refreshToken == null
+        ? Container()
+        : Container(
+            color: Colors.blue,
+            height: 42,
+            child: TextButton(
+              child: Text(
+                'refresh',
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: refreshToken,
+            ),
+          );
   }
 }
