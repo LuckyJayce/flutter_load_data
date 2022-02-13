@@ -27,7 +27,7 @@ class RefreshPage extends StatelessWidget {
     }, onProgress: (current, total, [progressData]) {
       print(
           'onProgressCallback current:$current total:$total progressData:$progressData');
-    }, onEnd: (ResultCode code, List<Book>? data, Object? error) {
+    }, onPost: (ResultCode code, List<Book>? data, Object? error) {
       print('onEndCallback code:$code data:$data error:$error');
     }));
   }

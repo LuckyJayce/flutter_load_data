@@ -11,7 +11,6 @@ import 'task.dart';
 import 'task_helper.dart';
 import 'refresh/no_refresh_adapter.dart';
 import 'refresh_adapter.dart';
-import 'status_delegate.dart';
 
 class LoadDataWidget<DATA> extends StatefulWidget {
   final LoadController<DATA>? controller;
@@ -34,7 +33,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   _LoadControllerImp<DATA> _loadControllerImp = _LoadControllerImp<DATA>();
   late LoadConfig<DATA> loadConfig;
 
-  TaskStatus taskStatus = TaskStatus.un_set;
+  TaskStatus taskStatus = TaskStatus.un_load;
   late int current;
   late int total;
   Object? error;
@@ -70,7 +69,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
         this.progressData = progressData;
         this.taskStatus = TaskStatus.progress;
       });
-    }, onEnd: (ResultCode code, DATA? data, Object? error) {
+    }, onPost: (ResultCode code, DATA? data, Object? error) {
       setState(() {
         this.error = error;
         this.resultCode = code;
@@ -128,7 +127,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     bool isRefresh = _loadControllerImp.isRefreshing;
     bool showLoadingWidget = _loadControllerImp.showLoadingWidget;
     switch (taskStatus) {
-      case TaskStatus.un_set:
+      case TaskStatus.un_load:
         widget = buildInit();
         break;
       case TaskStatus.start:
@@ -169,8 +168,8 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     if (loadConfig.dataManager.getData() == null) {
       return refreshWrap(
           WidgetStatus.unload,
-          loadConfig.statusDelegate
-              .buildUnLoadWidget(context, _loadControllerImp.refresh));
+          loadConfig.dataDelegate.buildUnLoadWidget(context,
+              loadConfig.dataManager.getData(), _loadControllerImp.refresh));
     }
     return refreshWrap(WidgetStatus.normal, null);
   }
@@ -179,7 +178,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     if (loadConfig.dataManager.isEmpty()) {
       return refreshWrap(
           WidgetStatus.fail,
-          loadConfig.statusDelegate
+          loadConfig.dataDelegate
               .buildFailWidget(context, error, _loadControllerImp.refresh));
     }
     return null;
@@ -189,13 +188,13 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     if (isUnload()) {
       return refreshWrap(
           WidgetStatus.unload,
-          loadConfig.statusDelegate
-              .buildUnLoadWidget(context, _loadControllerImp.refresh));
+          loadConfig.dataDelegate.buildUnLoadWidget(context,
+              loadConfig.dataManager.getData(), _loadControllerImp.refresh));
     }
     if (loadConfig.dataManager.isEmpty()) {
       return refreshWrap(
           WidgetStatus.empty,
-          loadConfig.statusDelegate
+          loadConfig.dataDelegate
               .buildEmptyWidget(context, _loadControllerImp.refresh));
     }
     return null;
@@ -208,7 +207,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   Widget? buildSuccessWidget() {
     if (!loadConfig.dataManager.isEmpty()) {
       contentWidget = loadConfig.dataDelegate
-          .build(context, loadConfig.dataManager.getData()!);
+          .buildDataWidget(context, loadConfig.dataManager.getData());
       //数据不为空
       return refreshWrap(WidgetStatus.normal, null);
     }
@@ -216,14 +215,14 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     //如果数据为空，显示空数据--------------
     return refreshWrap(
         WidgetStatus.empty,
-        loadConfig.statusDelegate
+        loadConfig.dataDelegate
             .buildEmptyWidget(context, _loadControllerImp.refresh));
   }
 
   Widget? buildLoadStart(bool isRefresh, bool showLoadingWidget) {
     if (showLoadingWidget) {
       return refreshWrap(WidgetStatus.loading,
-          loadConfig.statusDelegate.buildLoadingWidget(context, -1, -1, null));
+          loadConfig.dataDelegate.buildLoadingWidget(context, -1, -1, null));
     }
     return null;
   }
@@ -233,7 +232,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
     if (showLoadingWidget) {
       return refreshWrap(
           WidgetStatus.loading,
-          loadConfig.statusDelegate
+          loadConfig.dataDelegate
               .buildLoadingWidget(context, current, total, progressData));
     }
     return null;
@@ -242,7 +241,7 @@ class LoadDataWidgetState<DATA> extends State<LoadDataWidget<DATA>> {
   Widget refreshWrap(WidgetStatus status, Widget? statusWidget) {
     if (contentWidget == null && loadConfig.dataManager.getData() != null) {
       contentWidget = loadConfig.dataDelegate
-          .build(context, loadConfig.dataManager.getData()!);
+          .buildDataWidget(context, loadConfig.dataManager.getData());
     }
     return loadConfig.refreshAdapter
         .wrapChild(context, status, statusWidget, contentWidget);
@@ -355,6 +354,7 @@ class _LoadControllerImp<DATA> {
   bool isRefreshing = false;
   bool isLoadMoreIng = false;
   bool showLoadingWidget = false;
+  bool hasLoaded = false;
   final TaskHelper taskHelper = TaskHelper();
 
   void set({context, loadConfig, setStateCall}) {
@@ -429,28 +429,24 @@ class _LoadControllerImp<DATA> {
       refreshCallbackList.onStart();
     }, onProgress: (int current, int total, [Object? progressData]) {
       refreshCallbackList.onProgress(current, total, progressData);
-    }, onEnd: (ResultCode code, DATA? data, Object? error) {
-      //end ----------
-      switch (code) {
-        case ResultCode.success:
-          //通知更新数据
-          if (data != null) {
-            loadConfig.dataManager.notifyDataChange(data, true);
-          }
-          break;
-        case ResultCode.fail:
-          if (!loadConfig.dataManager.isEmpty()) {
-            loadConfig.statusDelegate.tipFail(context, error!, refresh);
-          }
-          break;
-        case ResultCode.cancel:
-          break;
+    }, onPostSuccess: (data) {
+      hasLoaded = true;
+      //通知更新数据
+      if (data != null) {
+        loadConfig.dataManager.notifyDataChange(true, data);
       }
+      refreshCallbackList.onPostSuccess(data);
+    }, onPostFail: (error) {
+      if (!loadConfig.dataManager.isEmpty()) {
+        loadConfig.dataDelegate.tipFailInfo(context, error!, refresh);
+      }
+      refreshCallbackList.onPostFail(error);
+    }, onPostCancel: () {
+      refreshCallbackList.onPostCancel();
+    }, onPost: (ResultCode code, DATA? data, Object? error) {
       loadConfig.refreshAdapter.finishRefresh(context,
           code == ResultCode.success, error, !loadConfig.dataSource.hasMore());
       isRefreshing = false;
-      //通知监听更新
-      refreshCallbackList.onEnd(code, data, error);
       completer.complete();
     });
     taskHelper.executeByFunction<DATA>(loadConfig.dataSource.refresh, callback);
@@ -475,40 +471,43 @@ class _LoadControllerImp<DATA> {
     taskHelper.cancelAll();
     isLoadMoreIng = true;
 
-    Callback<DATA> callback = Callback.build<DATA>(onStart: () {
-      loadMoreCallbackList.onStart();
-    }, onProgress: (int current, int total, [Object? progressData]) {
-      loadMoreCallbackList.onProgress(current, total, progressData);
-    }, onEnd: (ResultCode code, DATA? data, Object? error) {
-      //end ----------
-      switch (code) {
-        case ResultCode.success:
-          //通知更新数据
-          if (data != null) {
-            loadConfig.dataManager.notifyDataChange(data, false);
-          }
-          break;
-        case ResultCode.fail:
-          if (!loadConfig.dataManager.isEmpty()) {
-            loadConfig.statusDelegate.tipFail(context, error!, refresh);
-          }
-          break;
-        case ResultCode.cancel:
-          break;
-      }
-      loadConfig.refreshAdapter.finishLoadMore(context,
-          code == ResultCode.success, error, !loadConfig.dataSource.hasMore());
-      isLoadMoreIng = false;
-      loadMoreCallbackList.onEnd(code, data, error);
-      completer.complete();
-    });
+    Callback<DATA> callback = Callback.build<DATA>(
+      onStart: () {
+        loadMoreCallbackList.onStart();
+      },
+      onProgress: (int current, int total, [Object? progressData]) {
+        loadMoreCallbackList.onProgress(current, total, progressData);
+      },
+      onPostSuccess: (data) {
+        loadConfig.dataManager.notifyDataChange(false, data);
+        loadMoreCallbackList.onPostSuccess(data);
+      },
+      onPostFail: (error) {
+        if (!loadConfig.dataManager.isEmpty()) {
+          loadConfig.dataDelegate.tipFailInfo(context, error!, refresh);
+        }
+        loadMoreCallbackList.onPostFail(error);
+      },
+      onPostCancel: () {
+        loadMoreCallbackList.onPostCancel();
+      },
+      onPost: (ResultCode code, DATA? data, Object? error) {
+        loadConfig.refreshAdapter.finishLoadMore(
+            context,
+            code == ResultCode.success,
+            error,
+            !loadConfig.dataSource.hasMore());
+        isLoadMoreIng = false;
+        completer.complete();
+      },
+    );
     taskHelper.executeByFunction<DATA>(
         loadConfig.dataSource.loadMore, callback);
     return completer.future;
   }
 
   bool isUnload() {
-    return loadConfig.dataManager.getData() == null;
+    return !hasLoaded;
   }
 
   void addRefreshCallback(Callback<DATA> callback) {
@@ -544,39 +543,31 @@ class LoadConfig<DATA> {
   final DataSource<DATA> dataSource;
   final DataManager<DATA> dataManager;
   final DataDelegate<DATA> dataDelegate;
-  final StatusDelegate statusDelegate;
   final RefreshAdapter refreshAdapter;
   final bool firstNeedRefresh;
-  static StatusDelegate defaultStatusDelegate = SimpleStatusDelegate();
 
   LoadConfig(
       {required this.dataSource,
       required this.dataManager,
       required this.dataDelegate,
-      StatusDelegate? statusDelegate,
       this.refreshAdapter = const NoRefreshAdapter(),
-      this.firstNeedRefresh = true})
-      : this.statusDelegate = statusDelegate ?? defaultStatusDelegate;
+      this.firstNeedRefresh = true});
 
   LoadConfig.task(
       {required Task<DATA> task,
       required this.dataManager,
       required this.dataDelegate,
-      StatusDelegate? statusDelegate,
       this.refreshAdapter = const NoRefreshAdapter(),
       this.firstNeedRefresh = true})
-      : this.dataSource = DataSource.buildByTask(task),
-        this.statusDelegate = statusDelegate ?? defaultStatusDelegate;
+      : this.dataSource = DataSource.buildByTask(task);
 
   LoadConfig.future(
       {required Future<DATA> future,
       required this.dataManager,
       required this.dataDelegate,
-      StatusDelegate? statusDelegate,
       this.refreshAdapter = const NoRefreshAdapter(),
       this.firstNeedRefresh = true})
-      : this.dataSource = DataSource.buildByTask(Task.buildByFuture(future)),
-        this.statusDelegate = statusDelegate ?? defaultStatusDelegate;
+      : this.dataSource = DataSource.buildByTask(Task.buildByFuture(future));
 }
 
 typedef ConfigCreate<DATA> = LoadConfig<DATA> Function(

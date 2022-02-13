@@ -4,7 +4,7 @@
 */
 
 import 'dart:async';
-import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'task.dart';
 
@@ -15,18 +15,23 @@ abstract class Callback<DATA> {
 
   void onProgress(int current, int total, [Object? progressData]);
 
-  void onEnd(ResultCode code, DATA? data, Object? error);
+  void onPostSuccess(DATA data);
+
+  void onPostFail(Object error);
+
+  void onPostCancel();
 
   static Callback<DATA> build<DATA>(
       {VoidCallback? onStart,
       ProgressCallback? onProgress,
-      EndCallback<DATA>? onEnd}) {
-    return _CallbackFunction<DATA>(onStart, onProgress, onEnd);
+      DataCallback<DATA>? onPostSuccess,
+      DataCallback? onPostFail,
+      VoidCallback? onPostCancel,
+      void Function(ResultCode code, DATA? data, Object? error)? onPost}) {
+    return _CallbackFunction<DATA>(
+        onStart, onProgress, onPostSuccess, onPostFail, onPostCancel, onPost);
   }
 }
-
-typedef EndCallback<DATA> = void Function(
-    ResultCode code, DATA? data, Object? error);
 
 class TaskHelper {
   List<CancelHandle> cancelHandleList = [];
@@ -44,17 +49,18 @@ class TaskHelper {
   }
 
   Future<TaskResult<DATA>> execute<DATA>(Task<DATA> task,
-      [Callback<DATA>? callback, CancelHandle? cancelHandle]) async {
+      [Callback<DATA>? callback, CancelHandle? cancelHandle]) {
     Completer<TaskResult<DATA>> completer = Completer();
     if (cancelHandle == null) {
       cancelHandle = new CancelHandle();
     }
     cancelHandleList.add(cancelHandle);
     Callback<DATA> removeHandleCallback = Callback.build<DATA>(
-        onEnd: (ResultCode code, DATA? data, Object? error) {
-      cancelHandleList.remove(cancelHandle);
-      completer.complete(TaskResult(code, data, error));
-    });
+      onPost: (code, data, error) {
+        cancelHandleList.remove(cancelHandle);
+        completer.complete(TaskResult(code, data, error));
+      },
+    );
     TaskExecutor.execute(task,
         cancelHandle: cancelHandle,
         callback: callback,
@@ -107,27 +113,27 @@ class TaskExecutor {
     _OnceCallback proxy = _OnceCallback(callback, callback2, callback3);
     proxy.onStart();
     cancelHandleNew.whenCancel.then((value) {
-      proxy.onEnd(ResultCode.cancel, null, null);
+      proxy.onPostCancel();
     });
     try {
       Future<DATA> future = task.execute(cancelHandleNew, proxy.onProgress);
       future.then((data) {
         if (!cancelHandleNew.isCancelled) {
-          proxy.onEnd(ResultCode.success, data, null);
+          proxy.onPostSuccess(data);
         } else {
-          proxy.onEnd(ResultCode.cancel, data, null);
+          proxy.onPostCancel();
         }
       }).catchError((error, stack) {
         debugPrint('$error\n$stack');
         if (!cancelHandleNew.isCancelled) {
-          proxy.onEnd(ResultCode.fail, null, error);
+          proxy.onPostFail(error);
         } else {
-          proxy.onEnd(ResultCode.cancel, null, error);
+          proxy.onPostCancel();
         }
       });
     } catch (error, stack) {
       debugPrint('$error\n$stack');
-      proxy.onEnd(ResultCode.fail, null, error);
+      proxy.onPostFail(error);
     }
   }
 }
@@ -159,12 +165,36 @@ class _OnceCallback<DATA> extends Callback<DATA> {
   }
 
   @override
-  void onEnd(ResultCode code, DATA? data, Object? error) {
+  void onPostCancel() {
     if (!isPosted) {
-      callback?.onEnd(code, data, error);
-      callback2?.onEnd(code, data, error);
-      callback3?.onEnd(code, data, error);
+      callback?.onPostCancel();
+      callback2?.onPostCancel();
+      callback3?.onPostCancel();
     }
+    _release();
+  }
+
+  @override
+  void onPostFail(Object error) {
+    if (!isPosted) {
+      callback?.onPostFail(error);
+      callback2?.onPostFail(error);
+      callback3?.onPostFail(error);
+    }
+    _release();
+  }
+
+  @override
+  void onPostSuccess(DATA data) {
+    if (!isPosted) {
+      callback?.onPostSuccess(data);
+      callback2?.onPostSuccess(data);
+      callback3?.onPostSuccess(data);
+    }
+    _release();
+  }
+
+  void _release() {
     callback = null;
     callback2 = null;
     callback3 = null;
@@ -201,9 +231,25 @@ class CallbackList<DATA> implements Callback<DATA> {
 
   @mustCallSuper
   @override
-  void onEnd(ResultCode code, DATA? data, Object? error) {
+  void onPostCancel() {
     for (var value in callbacks) {
-      value.onEnd(code, data, error);
+      value.onPostCancel();
+    }
+  }
+
+  @mustCallSuper
+  @override
+  void onPostFail(Object error) {
+    for (var value in callbacks) {
+      value.onPostFail(error);
+    }
+  }
+
+  @mustCallSuper
+  @override
+  void onPostSuccess(DATA data) {
+    for (var value in callbacks) {
+      value.onPostSuccess(data);
     }
   }
 }
@@ -211,9 +257,13 @@ class CallbackList<DATA> implements Callback<DATA> {
 class _CallbackFunction<DATA> extends Callback<DATA> {
   VoidCallback? _onStart;
   ProgressCallback? _onProgress;
-  EndCallback<DATA>? _postEnd;
+  VoidCallback? _postCancel;
+  DataCallback<DATA>? _postSuccess;
+  DataCallback? _postFail;
+  void Function(ResultCode code, DATA? data, Object? error)? _onPost;
 
-  _CallbackFunction(this._onStart, this._onProgress, this._postEnd);
+  _CallbackFunction(this._onStart, this._onProgress, this._postSuccess,
+      this._postFail, this._postCancel, this._onPost);
 
   @override
   void onStart() {
@@ -230,9 +280,32 @@ class _CallbackFunction<DATA> extends Callback<DATA> {
   }
 
   @override
-  void onEnd(ResultCode code, DATA? data, Object? error) {
-    if (_postEnd != null) {
-      _postEnd!(code, data, error);
+  void onPostCancel() {
+    if (_postCancel != null) {
+      _postCancel!();
+    }
+    if (_onPost != null) {
+      _onPost!(ResultCode.cancel, null, null);
+    }
+  }
+
+  @override
+  void onPostFail(Object error) {
+    if (_postFail != null) {
+      _postFail!(error);
+    }
+    if (_onPost != null) {
+      _onPost!(ResultCode.fail, null, error);
+    }
+  }
+
+  @override
+  void onPostSuccess(DATA data) {
+    if (_postFail != null) {
+      _postSuccess!(data);
+    }
+    if (_onPost != null) {
+      _onPost!(ResultCode.success, data, null);
     }
   }
 }
@@ -255,8 +328,8 @@ class SingleRunningTaskHelper {
   void _executeImp() {
     _TaskEntity? local = currentEntity;
     if (local == null && taskEntities.isNotEmpty) {
-      Callback changeStatusCallback = Callback.build(
-          onEnd: (ResultCode code, dynamic? data, Object? error) {
+      Callback changeStatusCallback =
+          Callback.build(onPost: (code, data, error) {
         currentEntity = null;
         //执行完继续执行下一个
         _executeImp();
@@ -318,8 +391,10 @@ class TaskResult<DATA> {
 }
 
 enum TaskStatus {
-  un_set,
+  un_load,
   start,
   progress,
   end,
 }
+
+typedef DataCallback<DATA> = void Function(DATA data);

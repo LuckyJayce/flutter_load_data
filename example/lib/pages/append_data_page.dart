@@ -64,7 +64,7 @@ class MyListDataManager<E> extends DataManager<List<E>> {
   }
 
   @override
-  void notifyDataChange(List<E> data, bool refresh) {
+  void notifyDataChange(bool refresh, List<E> data) {
     if (refresh) {
       result.clear();
       result.addAll(topList);

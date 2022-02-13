@@ -1,5 +1,4 @@
 import 'package:example/model/test_compute_task.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:load_data/load_data.dart';
 
@@ -34,7 +33,7 @@ class NoRefreshPage extends StatelessWidget {
                 return LoadConfig<int>(
                   dataSource: DataSource.buildByTask(TestComputeTask()),
                   dataDelegate: TestComputeDelegate(),
-                  dataManager: SimpleDataManager(),
+                  dataManager: RefreshDataManager(1),
                 );
               },
             ),
@@ -45,9 +44,9 @@ class NoRefreshPage extends StatelessWidget {
   }
 }
 
-class TestComputeDelegate extends DataDelegate<int> {
+class TestComputeDelegate extends SimpleDataDelegate<int> {
   @override
-  Widget build(BuildContext context, int data) {
+  Widget buildDataWidget(BuildContext context, int data) {
     return Center(
       child: Text('$data'),
     );

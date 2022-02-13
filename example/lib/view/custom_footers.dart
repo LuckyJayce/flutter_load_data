@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class HListFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return CustomFooter(builder: (BuildContext context, LoadStatus mode) {
+    return CustomFooter(builder: (BuildContext context, LoadStatus? mode) {
+      if (mode == null) {
+        return Container();
+      }
       Widget widget;
       switch (mode) {
         case LoadStatus.idle:

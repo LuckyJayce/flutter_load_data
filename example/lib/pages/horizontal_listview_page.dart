@@ -62,9 +62,9 @@ class BookListDataSource implements DataSource<List<Book>> {
 }
 
 ///显示列表数据
-class BookListDelegate extends DataDelegate<List<Book>> {
+class BookListDelegate extends SimpleDataDelegate<List<Book>> {
   @override
-  Widget build(BuildContext context, List<Book> list) {
+  Widget buildDataWidget(BuildContext context, List<Book> list) {
     return ListView.separated(
       scrollDirection: Axis.horizontal,
       itemBuilder: (context, index) {
