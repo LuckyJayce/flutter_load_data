@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:load_test/task/task.dart';
 import 'package:provider/provider.dart';
+
+import '../load_data.dart';
 
 abstract class Datasource<DATA> {
   FutureOr<DATA> load(bool refresh);

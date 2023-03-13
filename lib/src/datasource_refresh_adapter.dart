@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:load_test/task/task.dart';
 
+import '../load_data.dart';
 import 'datasource_provider.dart';
 
 extension FlutterRefresh<DATA> on DatasourceProviderKey<DATA> {
