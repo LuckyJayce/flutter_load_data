@@ -118,10 +118,10 @@ packages:
     dependency: transitive
     description:
       name: nested
-      sha256: d3492747c400f5639b9d7d76a20d73b51581de20f8dab0d861d839e5a8aa6be5
+      sha256: "03bac4c528c64c95c722ec99280375a6f2fc708eec17c7b3f07253b626cd2a20"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.0.4"
+    version: "1.0.0"
   path:
     dependency: transitive
     description:
@@ -134,10 +134,10 @@ packages:
     dependency: "direct main"
     description:
       name: provider
-      sha256: "18154baee2bf88724605a09060e228c663bc68f52132d267870a81e8cadcbf66"
+      sha256: cdbe7530b12ecd9eb455bdaa2fcb8d4dad22e80b8afb4798b41479d5ce26847f
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "4.3.2+2"
+    version: "6.0.5"
   pull_to_refresh:
     dependency: "direct main"
     description:
@@ -208,5 +208,5 @@ packages:
     source: hosted
     version: "2.1.4"
 sdks:
-  dart: ">=2.18.0 <3.0.0"
+  dart: ">=2.19.3 <3.0.0"
   flutter: ">=2.0.0"
