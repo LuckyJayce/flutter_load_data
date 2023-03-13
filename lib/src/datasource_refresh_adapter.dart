@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../load_data.dart';
-import 'datasource_provider.dart';
 
-extension FlutterRefresh<DATA> on DatasourceProviderKey<DATA> {
+extension RefreshExtension<DATA> on DatasourceProviderKey<DATA> {
   Widget buildRefresh({
     required RefreshDelegate refreshDelegate,
     required Widget Function() loading,
