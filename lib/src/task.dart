@@ -1,104 +1,227 @@
-/*
-    Author: Jayce
-    createTime:2020-10
-*/
-
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
-abstract class Task<DATA> {
-  ///加载数据的方法
-  ///cancelHandle 借鉴于dio类库的设计, 外部通过cancelHandle.cancel()取消，里面则可以通过cancelHandle.isCanceled()判断，或者通过cancelHandle.interruptedWhenCanceled()当被取消是抛出取消异常终止方法执行
-  ///progressCallback，可能为空使用前判空，用于通知外部进度
-  ///Future<DATA> 返回数据的Future
-  Future<DATA> execute(CancelHandle cancelHandle,
-      [ProgressCallback? progressCallback]);
+abstract class SimpleTask<DATA> {
+  FutureOr<DATA> execute();
 
-  static Task<DATA> buildByFunction<DATA>(TaskFunction<DATA> function) {
-    return _TaskF<DATA>(function);
-  }
-
-  static Task<DATA> buildByFuture<DATA>(Future<DATA> future) {
-    return _TaskFuture<DATA>(future);
-  }
-
-  static Task<DATA> buildByData<DATA>(DATA data) {
-    return _TaskData<DATA>(data);
+  static SimpleTask<DATA> build<DATA>(FutureOr<DATA> Function() function) {
+    return _SimpleTaskImp<DATA>(function);
   }
 }
 
-class _TaskData<DATA> implements Task<DATA> {
-  DATA data;
+class _SimpleTaskImp<DATA> extends SimpleTask<DATA> {
+  FutureOr<DATA> Function() function;
 
-  _TaskData(this.data);
+  _SimpleTaskImp(this.function);
 
   @override
-  Future<DATA> execute(CancelHandle cancelHandle,
-      [ProgressCallback? progressCallback]) {
-    return SynchronousFuture(data);
+  FutureOr<DATA> execute() {
+    return function();
   }
 }
 
-class _TaskFuture<DATA> implements Task<DATA> {
-  Future<DATA> future;
+abstract class SimpleCallback<DATA> {
+  void onStart() {}
 
-  _TaskFuture(this.future);
+  void onPostSuccess(DATA data) {}
+
+  void onPostFailed(Object error) {}
+
+  static SimpleCallback<DATA> build<DATA>({
+    VoidCallback? start,
+    final void Function(Object error)? failed,
+    void Function(DATA data)? success,
+  }) {
+    return _SimpleCallbackImp<DATA>(
+      start: start,
+      failed: failed,
+      success: success,
+    );
+  }
+}
+
+class SimpleCallbacksProxy<DATA> implements SimpleCallback<DATA> {
+  final List<SimpleCallback> _callbacks = [];
+
+  void addCallback(SimpleCallback<DATA> callback) {
+    _callbacks.add(callback);
+  }
+
+  void removeCallback(SimpleCallback<DATA> callback) {
+    _callbacks.remove(callback);
+  }
 
   @override
-  Future<DATA> execute(CancelHandle cancelHandle,
-      [ProgressCallback? progressCallback]) {
-    return future;
-  }
-}
-
-class _TaskF<DATA> implements Task<DATA> {
-  TaskFunction<DATA> task;
-
-  _TaskF(this.task);
-
-  @override
-  Future<DATA> execute(CancelHandle cancelHandle,
-      [ProgressCallback? progressCallback]) {
-    return task(cancelHandle, progressCallback);
-  }
-}
-
-typedef ProgressCallback = void Function(int current, int total,
-    [Object? progressData]);
-
-///用于取消的句柄，借鉴于dio CancelToken
-class CancelHandle {
-  final Completer _completer = Completer();
-
-  CancelException? _cancelException;
-
-  ///当被取消是抛出取消异常终止方法执行，用该方法注释资源释放等问题
-  void interruptedWhenCanceled() {
-    if (isCancelled) {
-      throw _cancelException!;
+  void onStart() {
+    for (var value in _callbacks) {
+      value.onStart();
     }
   }
 
-  ///判断是否被取消，可以用于循环判断
-  static bool isCancel(Object e) {
-    return e is CancelException;
+  @override
+  void onPostFailed(Object error) {
+    for (var value in _callbacks) {
+      value.onPostFailed(error);
+    }
   }
 
-  /// whether cancelled
-  bool get isCancelled => _cancelException != null;
-
-  /// When cancelled, this future will be resolved. 可以通过
-  Future<void> get whenCancel => _completer.future;
-
-  /// Cancel the request
-  void cancel() {
-    this._cancelException = CancelException();
-    _completer.complete(_cancelException);
+  @override
+  void onPostSuccess(DATA data) {
+    for (var value in _callbacks) {
+      value.onPostSuccess(data);
+    }
   }
 }
 
-class CancelException implements Exception {}
+class _SimpleCallbackImp<DATA> implements SimpleCallback<DATA> {
+  final VoidCallback? start;
+  final void Function(Object error)? failed;
+  final void Function(DATA data)? success;
 
-typedef TaskFunction<DATA> = Future<DATA> Function(CancelHandle cancelHandle,
-    [ProgressCallback? progressCallback]);
+  _SimpleCallbackImp({
+    this.start,
+    this.failed,
+    this.success,
+  });
+
+  @override
+  void onStart() {
+    if (start != null) {
+      start!();
+    }
+  }
+
+  @override
+  void onPostFailed(Object error) {
+    if (failed != null) {
+      failed!(error);
+    }
+  }
+
+  @override
+  void onPostSuccess(DATA data) {
+    if (success != null) {
+      success!(data);
+    }
+  }
+}
+
+class TaskExecutor<DATA> {
+  SimpleTask<DATA>? _task;
+  SimpleCallback<DATA>? _callback;
+
+  void unsubscribe() {
+    _callback = null;
+  }
+
+  TaskExecutor(SimpleTask<DATA> task, SimpleCallback<DATA>? callback)
+      : _task = task,
+        _callback = callback;
+
+  Future<TaskResult<DATA>> execute() async {
+    try {
+      _callback?.onStart();
+      DATA data = await _task!.execute();
+      _callback?.onPostSuccess(data);
+      ////执行完释放对象引用
+      _callback = null;
+      _task = null;
+      return TaskResult.success(data);
+    } catch (e, strace) {
+      if (kDebugMode) {
+        print('e:$e strace:$strace');
+      }
+      _callback?.onPostFailed(e);
+      //执行完释放对象引用
+      _callback = null;
+      _task = null;
+      return TaskResult.error(e);
+    }
+  }
+}
+
+@immutable
+class TaskResult<DATA> {
+  final DATA? _data;
+  final Object? _error;
+  final bool _success;
+
+  const TaskResult.success(DATA data)
+      : _data = data,
+        _success = true,
+        _error = null;
+
+  const TaskResult.error(Object error)
+      : _error = error,
+        _success = false,
+        _data = null;
+
+  bool isSuccessful() => _success;
+
+  DATA get data => _data!;
+
+  Object get error => _error!;
+}
+
+class TaskHelper {
+  final List<TaskExecutor> _taskExecutorList = [];
+
+  Future<TaskResult<DATA>> execute<DATA>(SimpleTask<DATA> task,
+      [SimpleCallback<DATA>? callback]) async {
+    TaskExecutor<DATA> taskExecutor = TaskExecutor<DATA>(task, callback);
+    _taskExecutorList.add(taskExecutor);
+    TaskResult<DATA> result = await taskExecutor.execute();
+    _taskExecutorList.remove(taskExecutor);
+    return result;
+  }
+
+  void unsubscribeAll() {
+    List<TaskExecutor> list = List.from(_taskExecutorList);
+    for (var value in list) {
+      value.unsubscribe();
+    }
+    list.clear();
+  }
+
+  void dispose() {
+    unsubscribeAll();
+  }
+}
+
+mixin TaskStateMixin<T extends StatefulWidget> on State<T> {
+  late TaskHelper _taskHelper;
+
+  @override
+  void initState() {
+    _taskHelper = TaskHelper();
+    super.initState();
+  }
+
+  TaskHelper get taskHelper => _taskHelper;
+
+  @override
+  void dispose() {
+    _taskHelper.dispose();
+    super.dispose();
+  }
+}
+
+mixin TaskMixin on ChangeNotifier {
+  TaskHelper? _taskHelper;
+  bool _isDisposed = false;
+
+  TaskHelper get taskHelper => _taskHelper ??= TaskHelper();
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _taskHelper?.dispose();
+    super.dispose();
+  }
+
+  bool isDisposed() {
+    return _isDisposed;
+  }
+}
