@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
-
+import 'package:flutter/widgets.dart';
 import 'task.dart';
 
 class TaskNotifier<DATA> extends ChangeNotifier

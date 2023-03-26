@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../load_data.dart';
+import 'datasource_notifier.dart';
 
 extension RefreshExtension<DATA> on DatasourceProviderKey<DATA> {
   Widget buildRefresh({
