@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 
 import 'task.dart';
 
@@ -94,7 +95,7 @@ class TaskNotifier<DATA> extends ChangeNotifier
   }
 }
 
-class TaskListenableBuilder<DATA> extends StatefulWidget {
+class TaskListenableBuilder<DATA> extends StatelessWidget {
   final Widget Function() loading;
 
   final Widget Function(Object error) error;
@@ -103,23 +104,50 @@ class TaskListenableBuilder<DATA> extends StatefulWidget {
 
   final TaskNotifier<DATA> listenable;
 
-  final Widget? child;
-
   const TaskListenableBuilder({
     super.key,
     required this.listenable,
     required this.loading,
     required this.error,
     required this.data,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: listenable,
+      builder: (context, child) {
+        if (listenable.isLoading()) {
+          return loading();
+        }
+        if (listenable.isSuccessful()) {
+          return data(listenable.data as DATA);
+        }
+        return error(listenable.error!);
+      },
+    );
+  }
+}
+
+class ListenableBuilder extends StatefulWidget {
+  final Listenable listenable;
+
+  final Widget? child;
+
+  final TransitionBuilder builder;
+
+  const ListenableBuilder({
+    super.key,
+    required this.listenable,
+    required this.builder,
     this.child,
   });
 
   @override
-  State<StatefulWidget> createState() => _TaskListenableBuilderState<DATA>();
+  State<StatefulWidget> createState() => _ListenableBuilderState();
 }
 
-class _TaskListenableBuilderState<DATA>
-    extends State<TaskListenableBuilder<DATA>> {
+class _ListenableBuilderState extends State<ListenableBuilder> {
   @override
   void initState() {
     super.initState();
@@ -127,7 +155,7 @@ class _TaskListenableBuilderState<DATA>
   }
 
   @override
-  void didUpdateWidget(TaskListenableBuilder<DATA> oldWidget) {
+  void didUpdateWidget(ListenableBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.listenable != widget.listenable) {
       oldWidget.listenable.removeListener(_valueChanged);
@@ -147,12 +175,6 @@ class _TaskListenableBuilderState<DATA>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.listenable.isLoading()) {
-      return widget.loading();
-    }
-    if (widget.listenable.isSuccessful()) {
-      return widget.data(widget.listenable.data as DATA);
-    }
-    return widget.error(widget.listenable.error!);
+    return widget.builder(context, widget.child);
   }
 }
