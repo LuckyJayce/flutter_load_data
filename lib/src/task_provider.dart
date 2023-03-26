@@ -24,28 +24,40 @@ class TaskProviderKey<DATA> {
     required Widget Function(Object error) error,
     required Widget Function(DATA data) data,
   }) {
-    return Consumer<TaskNotifier<DATA>>(
-      builder: (context, notifier, child) {
-        if (notifier.isLoading()) {
-          return loading();
-        }
-        if (notifier.isSuccessful()) {
-          return data(notifier.data as DATA);
-        }
-        return error(notifier.error!);
-      },
-    );
+    return Builder(builder: (context) {
+      return TaskListenableBuilder(
+        listenable: read(context),
+        loading: loading,
+        error: error,
+        data: data,
+      );
+    });
+    //
+    // return Consumer<TaskNotifier<DATA>>(
+    //   builder: (context, notifier, child) {
+    //     if (notifier.isLoading()) {
+    //       return loading();
+    //     }
+    //     if (notifier.isSuccessful()) {
+    //       return data(notifier.data as DATA);
+    //     }
+    //     return error(notifier.error!);
+    //   },
+    // );
   }
 
   Widget consumer(
-      Widget Function(
-    BuildContext context,
-    TaskNotifier<DATA> notifier,
+    Widget Function(
+      BuildContext context,
+      TaskNotifier<DATA> notifier,
+      Widget? child,
+    )
+        builder,
     Widget? child,
-  )
-          builder) {
+  ) {
     return Consumer<TaskNotifier<DATA>>(
       builder: builder,
+      child: child,
     );
   }
 
