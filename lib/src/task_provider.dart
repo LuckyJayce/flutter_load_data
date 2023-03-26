@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'task.dart';
+import 'task_notifier.dart';
 
 class TaskProviderKey<DATA> {
   ChangeNotifierProvider<TaskNotifier<DATA>> provider(
@@ -12,7 +13,7 @@ class TaskProviderKey<DATA> {
       child: child,
       create: (BuildContext context) {
         var notifier = TaskNotifier<DATA>(create(context));
-        notifier.executeTask();
+        notifier.execute();
         return notifier;
       },
     );
@@ -55,57 +56,4 @@ class TaskProviderKey<DATA> {
   TaskNotifier<DATA> watch(BuildContext context) {
     return Provider.of<TaskNotifier<DATA>>(context, listen: true);
   }
-}
-
-class TaskNotifier<DATA> extends ChangeNotifier
-    with TaskMixin
-    implements SimpleCallback<DATA> {
-  final SimpleTask<DATA> task;
-  TaskResult<DATA>? _result;
-  bool _isLoading = false;
-
-  TaskNotifier(this.task);
-
-  bool isLoading() {
-    return _isLoading;
-  }
-
-  void executeTask({bool force = false}) {
-    if (force) {
-      taskHelper.unsubscribeAll();
-      taskHelper.execute(task, this);
-    } else {
-      if (!isLoading()) {
-        taskHelper.execute(task, this);
-      }
-    }
-  }
-
-  @override
-  void onStart() {
-    _isLoading = true;
-    notifyListeners();
-  }
-
-  @override
-  void onPostFailed(Object error) {
-    _result = TaskResult.error(error);
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  @override
-  void onPostSuccess(DATA data) {
-    _result = TaskResult.success(data);
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  bool isSuccessful() {
-    return _result != null && _result!.isSuccessful();
-  }
-
-  DATA? get data => _result == null ? null : _result!.data;
-
-  Object? get error => _result == null ? null : _result!.error;
 }

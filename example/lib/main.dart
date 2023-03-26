@@ -115,6 +115,12 @@ class DetailScreen extends StatelessWidget {
                     },
                     child: const Text('empty data'),
                   ),
+                  ElevatedButton(
+                    onPressed: () {
+                      ''.substring(1,100);
+                    },
+                    child: const Text('eeeee'),
+                  ),
                 ],
               ),
               Expanded(

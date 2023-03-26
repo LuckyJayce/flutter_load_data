@@ -108,11 +108,19 @@ class _SimpleCallbackImp<DATA> implements SimpleCallback<DATA> {
   }
 }
 
+class UnsubscribeException implements Exception {
+  const UnsubscribeException();
+}
+
 class TaskExecutor<DATA> {
   SimpleTask<DATA>? _task;
   SimpleCallback<DATA>? _callback;
+  bool _finished = false;
 
   void unsubscribe() {
+    if (!_finished) {
+      _callback?.onPostFailed(const UnsubscribeException());
+    }
     _callback = null;
   }
 
@@ -120,7 +128,7 @@ class TaskExecutor<DATA> {
       : _task = task,
         _callback = callback;
 
-  Future<TaskResult<DATA>> execute() async {
+  Future<DATA> execute() async {
     try {
       _callback?.onStart();
       DATA data = await _task!.execute();
@@ -128,7 +136,8 @@ class TaskExecutor<DATA> {
       ////执行完释放对象引用
       _callback = null;
       _task = null;
-      return TaskResult.success(data);
+      _finished = true;
+      return data;
     } catch (e, strace) {
       if (kDebugMode) {
         print('e:$e strace:$strace');
@@ -137,42 +146,20 @@ class TaskExecutor<DATA> {
       //执行完释放对象引用
       _callback = null;
       _task = null;
-      return TaskResult.error(e);
+      _finished = true;
+      return Future.error(e);
     }
   }
-}
-
-@immutable
-class TaskResult<DATA> {
-  final DATA? _data;
-  final Object? _error;
-  final bool _success;
-
-  const TaskResult.success(DATA data)
-      : _data = data,
-        _success = true,
-        _error = null;
-
-  const TaskResult.error(Object error)
-      : _error = error,
-        _success = false,
-        _data = null;
-
-  bool isSuccessful() => _success;
-
-  DATA get data => _data!;
-
-  Object get error => _error!;
 }
 
 class TaskHelper {
   final List<TaskExecutor> _taskExecutorList = [];
 
-  Future<TaskResult<DATA>> execute<DATA>(SimpleTask<DATA> task,
+  Future<DATA> execute<DATA>(SimpleTask<DATA> task,
       [SimpleCallback<DATA>? callback]) async {
     TaskExecutor<DATA> taskExecutor = TaskExecutor<DATA>(task, callback);
     _taskExecutorList.add(taskExecutor);
-    TaskResult<DATA> result = await taskExecutor.execute();
+    Future<DATA> result = taskExecutor.execute();
     _taskExecutorList.remove(taskExecutor);
     return result;
   }
